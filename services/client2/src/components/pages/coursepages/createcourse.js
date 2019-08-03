@@ -1,0 +1,651 @@
+import React from 'react'
+import {Link, Redirect} from 'react-router-dom'
+import {CourseFormRules} from "./course_form_rules.js"
+import CourseLogo from "./CourseLogo.js"
+import axios from 'axios'
+import ReactDOM from 'react-dom'
+import { 
+  MDBRow,
+  MDBCol,
+  MDBCard,
+  MDBView,
+  MDBCardBody,
+  MDBInput,
+  MDBContainer,
+  MDBAvatar,
+  MDBBtn,
+  MDBFileInput,
+  MDBModal,
+  SideNavLink,
+  MDBStepper, MDBStep, MDBSelect, MDBIcon, MDBDatePicker, MDBChipsInput,MDBSelectInput, MDBSelectOptions, MDBSelectOption,
+  MDBDropdown,
+  MDBDropdownToggle,
+  MDBDropdownMenu,
+  MDBDropdownItem
+} from 'mdbreact';
+import CourseFieldError from './course_field_error.js'
+
+
+class CreateCourse extends React.Component{
+
+	constructor(props){
+		super(props)
+		this.state = {
+			redirect: false,
+			page: "/createcourse/stepone",
+			courseLevelLists: [],
+			courseLevelGroupLists: [],
+			courseFallStreamLists: [],
+			groupLevelStreamLists:[],
+			departments:[],
+			ageTo: [],
+			ageToStarts: 1,
+			courseLevelTypeId: 0,
+			groupChange:false,
+			groupLevelId: 0,
+			courseIsFor: false,
+			CourseFormRules: CourseFormRules,
+			CourseLastInsertId: props.match.params.courseid,
+			formData:{
+				courselevelData: 0,
+				courseGroupData: 0,
+				courseIsForData: 0,
+				courseIsForText: '',
+				courseAgeFromData: 0,
+				courseAgeToData: 'And Above',
+				courseFallStreamData: 0,
+				courseFallStreamText:'',
+				courseTypeData: 0,
+				courseNameData: '',
+				officialCourseData: 0,
+				courseLogoData: 'https://mdbootstrap.com/img/Photos/Horizontal/Nature/4-col/img%20(34).jpg',
+				courseLogoRadiusData: 0,
+				courseDescriptionData: '',
+				courseFromDate: '',
+				courseToDate: '',
+				courseSearchTags: ''
+			},
+		}
+		this.getCourseLevel = this.getCourseLevel.bind(this)
+		this.validateForm = this.validateForm.bind(this)
+		this.getAgeTo = this.getAgeTo.bind(this)
+		this.setCourseLogo = this.setCourseLogo.bind(this)
+	}
+
+	componentDidMount(){
+      this.getCourseLevel()
+      this.addnewdepartment()
+  	}
+
+	navigatepageredirect(event, p){
+		this.setState({
+			redirect: true
+		})
+
+		if(event == "page1"){
+			this.setState({
+				page: "/createcourse/stepone"
+			})
+		}else if(event == "page2"){
+			this.setState({
+				page: "/createcourse/steptwo"
+			})
+		}else if(event == "page3"){
+			this.setState({
+				page: "/createcourse/stepthree"
+			})
+		}
+	}
+
+	navigatepage(){
+		if (this.state.redirect){
+			const path=this.state.page+"/"+this.state.CourseLastInsertId
+			return <Redirect to={path} />
+		}
+	}
+
+	courseLevelChange=(event)=>{
+		console.log(event.toString())
+		const formRules = this.state.CourseFormRules
+		const id = event.toString()
+		this.setState({
+			courseIsFor: false
+		})
+		if(id == "Select" || id == ""){
+			this.setState({
+		      	courseLevelGroupLists : [],
+		      	courseFallStreamLists : [],
+		      	courseLevelTypeId: 0,
+		    })
+		    formRules[0].valid = false
+		}else{
+			this.state.courseLevelTypeId = event.toString()
+			if(this.state.courseLevelTypeId == 3){
+				this.state.groupLevelId = 17
+				this.getCourseIsFor()
+			}else{
+				this.getCourseLevelGroup()
+			}
+			this.getCourseFallStream()
+			this.state.formData.courselevelData = event.toString()
+			formRules[0].valid = true
+		}
+		this.setState({CourseFormRules: formRules})
+	}
+
+	/* Get Course Level from MongoDB */
+	getCourseLevel=(event)=>{
+		const options = {
+	      url: `${process.env.REACT_APP_COURSES_SERVICE_URL}/courses/getCourseLevel`,
+	      method: 'get',
+	      headers: {
+	        'Content-Type': 'application/json',
+	        Authorization: `Bearer ${window.localStorage.authToken}`
+	      }
+	    }
+	    return axios(options)
+	    .then((res)=>{
+	      // console.log(res.data)
+	      this.setState({
+	      	courseLevelLists : res.data.courseLevelLists
+	      })
+	    })
+	    .catch((error)=>{console.log(error)})
+	}
+
+	/* Get Course Level Group from MongoDB */
+	getCourseLevelGroup=(event)=>{
+		if(this.state.courseLevelTypeId){
+			const options = {
+		      url: `${process.env.REACT_APP_COURSES_SERVICE_URL}/courses/getCourseLevelGroup`,
+		      method: 'post',
+		      data: {courseLevelId:this.state.courseLevelTypeId},
+		      headers: {
+		        'Content-Type': 'application/json',
+		        Authorization: `Bearer ${window.localStorage.authToken}`
+		      }
+		    }
+		    return axios(options)
+		    .then((res)=>{
+		      this.setState({
+		      	courseLevelGroupLists : res.data.courseLevelGroupLists
+		      })
+		    })
+		    .catch((error)=>{console.log(error)})
+		}
+	}
+
+	/* Get Course Stream from MongoDB */
+	getCourseFallStream=(event)=>{
+		if(this.state.courseLevelTypeId){
+			const options = {
+		      url: `${process.env.REACT_APP_COURSES_SERVICE_URL}/courses/getCourseFallStream`,
+		      method: 'post',
+		      data: {courseLevelId:this.state.courseLevelTypeId},
+		      headers: {
+		        'Content-Type': 'application/json',
+		        Authorization: `Bearer ${window.localStorage.authToken}`
+		      }
+		    }
+		    return axios(options)
+		    .then((res)=>{
+		      this.setState({
+		      	courseFallStreamLists : res.data.courseFallStreamLists
+		      })
+		    })
+		    .catch((error)=>{console.log(error)})
+		}
+	}
+
+	getCourseIsFor=(event)=>{
+		if(this.state.groupLevelId){
+			const options = {
+		      url: `${process.env.REACT_APP_COURSES_SERVICE_URL}/courses/getCourseIsFor`,
+		      method: 'post',
+		      data: {groupLevelId:this.state.groupLevelId},
+		      headers: {
+		        'Content-Type': 'application/json',
+		        Authorization: `Bearer ${window.localStorage.authToken}`
+		      }
+		    }
+		    return axios(options)
+		    .then((res)=>{
+		      this.setState({
+		      	courseIsFor: true,
+		      	groupLevelStreamLists : res.data.groupLevelStreamLists
+		      })
+		    })
+		    .catch((error)=>{console.log(error)})
+		}
+	}
+
+	courseGroupChange=(event)=>{
+		const formRules = this.state.CourseFormRules
+		const gid = event.toString()
+		if(gid == "Select"){
+			formRules[1].valid = false
+		}else{
+			formRules[1].valid = true
+			this.state.groupLevelId = gid
+			this.state.formData.courseGroupData = event.toString()
+			this.getCourseIsFor()
+		}
+		this.setState({CourseFormRules: formRules})
+	}
+
+	courseIsChange=(event)=>{
+		const node = ReactDOM.findDOMNode(this);
+		const formRules = this.state.CourseFormRules
+		const grpid = event.toString()
+		const grpTxt = node.querySelector('.courseisfor').value
+		if(grpid == ""){
+			formRules[2].valid = false
+		}else{
+			formRules[2].valid = true
+			this.state.formData.courseIsForData = event.toString()
+			this.state.formData.courseIsForText = grpTxt
+		}
+		this.setState({CourseFormRules: formRules})
+	}
+
+	courseFallStreamChange=(event)=>{
+		const node = ReactDOM.findDOMNode(this);
+		const streamTxt = node.querySelector('.courseFallStreamCls').value
+		const streamid = event.toString()
+		if(streamid != "Select"){
+			this.state.formData.courseFallStreamData = streamid
+			this.state.formData.courseFallStreamText = streamTxt
+		}else{
+			this.state.formData.courseFallStreamData = ''
+			this.state.formData.courseFallStreamText = ''
+		}
+	}
+
+	addnewdepartment(){
+		this.setState({
+			departments:[...this.state.departments,""]
+		});
+	  }
+
+	handleDepartment(e,index){
+		console.log(index)
+		this.state.departments[index]=e.target.value
+		this.setState({
+			departments:this.state.departments
+		})
+	}
+
+	handleremove(index){
+		console.log(index)
+		this.state.departments.splice(index,1)
+		this.setState({
+			departments:this.state.departments
+		})
+	}
+
+	setCourseLogo(courseLogoUrl, imageRadius){
+		this.state.formData.courseLogoData = courseLogoUrl
+		this.state.formData.courseLogoRadiusData = imageRadius
+	}
+
+	validateForm(event){	
+		const options = {
+			url: `${process.env.REACT_APP_COURSES_SERVICE_URL}/courses/addCourseDetails`,
+			method: 'post',
+			data: this.state.formData,
+			headers: {
+				'Content-Type': 'application/json',
+				Authorization: `Bearer ${window.localStorage.authToken}`
+			}
+		}
+		return axios(options)
+		.then((res) => {
+			console.log(res.data.data['_id']['$oid'])
+			this.setState({
+				CourseLastInsertId: encodeURIComponent(res.data.data['_id']['$oid'])
+			})
+			this.navigatepageredirect("page2")
+		})
+	}
+
+	handleChange=(event)=>{
+		const Obj = this.state.formData
+		Obj[event.target.name] = event.target.value
+		this.validateHandleChange()
+	}
+
+	validateHandleChange(){
+		const formRules = this.state.CourseFormRules
+		const formData = this.state.formData
+
+		if(formData.courseNameData.length >= 1){
+			formRules[5].valid = true
+		}else{
+			formRules[5].valid = false
+		}
+
+		this.setState({
+			CourseFormRules: formRules
+		})
+	}
+
+	courseTypeChange=(e)=>{
+		const formRules = this.state.CourseFormRules
+		const TisVal = e.toString()
+		if(TisVal == "Select" || TisVal == ""){
+			formRules[4].valid = false
+		}else{
+			formRules[4].valid = true
+			this.state.formData.courseTypeData = TisVal
+		}
+		this.setState({CourseFormRules: formRules})
+	}
+
+	setAgeFrom=(event)=>{
+		const formRules = this.state.CourseFormRules
+		this.state.ageToStarts = event.toString()
+		this.setState({
+			ageToStarts: this.state.ageToStarts
+		})
+		this.state.formData.courseAgeFromData = event.toString()
+
+		formRules[3].valid = true
+		this.getAgeTo()
+	}
+
+	setAgeTo=(event)=>{
+		this.state.formData.courseAgeToData = event.toString()
+	}
+
+	getAgeFrom = () => {
+		var selectOptions = [];
+		for(let i =1; i <= 100; i++){
+			selectOptions.push(<MDBSelectOption value={i}>{i}</MDBSelectOption>)
+		}
+		return selectOptions
+	}
+
+	getAgeTo = () => {
+		var selectOptions = [];
+		this.state.ageTo = []
+		const n = this.state.ageToStarts
+		for(let i = n; i <= 100; i++){
+			this.state.ageTo[i]=i
+		}
+		this.setState({
+			ageTo: this.state.ageTo
+		})
+	}
+
+	render(){
+		
+		let formRules = this.state.CourseFormRules
+
+		return(
+			<MDBContainer>
+				<MDBStepper form>
+	                <MDBStep form>
+                		{this.navigatepage()}
+                		<MDBBtn color="indigo" circle onClick={this.navigatepageredirect.bind(this,"page1")} >
+                  		1
+                		</MDBBtn>
+	                  	<p>Course</p>
+	                </MDBStep>
+	                <MDBStep form>
+                    	<MDBBtn color="default" disabled={false} circle onClick={this.navigatepageredirect.bind(this,"page2")} >
+                      	2
+                    	</MDBBtn>
+	                  	<p>Resources</p>
+	                </MDBStep>
+	                <MDBStep form>
+                    	<MDBBtn color="default" circle onClick={this.navigatepageredirect.bind(this,"page3")} >
+                      	3
+                    	</MDBBtn>
+	                  	<p>Payment</p>
+	                </MDBStep>
+				</MDBStepper>
+				
+				<MDBCard narrow >
+					<MDBView cascade className="mdb-color lighten-3 card-header">
+	                	<h5 className="mb-0 font-weight-bold text-center text-white">Create Course</h5>
+	              	</MDBView>
+
+	              	<MDBContainer>
+	              		<br/>
+		              	<div class="contentBox">
+							<MDBContainer>
+								{/* Course level select box */}
+								<MDBRow>
+									<MDBCol lg="12" className="mb-r" >
+										<MDBSelect outline getValue={this.courseLevelChange.bind(this)} label="Course Level">
+								        	<MDBSelectInput className="courselevel" selected="Select" />
+									        <MDBSelectOptions>
+									        	<MDBSelectOption value="">Select</MDBSelectOption>
+									        	{this.state.courseLevelLists.map((courseList, index)=>(
+									        			<MDBSelectOption value={courseList.CourseLevelId}>{courseList.CourseLevelName}</MDBSelectOption>
+									        		)
+									        	)}
+									        </MDBSelectOptions>
+								        </MDBSelect>
+								        <CourseFieldError formRulesObject = {formRules[0]} />
+								    </MDBCol>
+								</MDBRow>
+
+								{/* Course level group select box */}
+								{ ((this.state.courseLevelTypeId == 1) || (this.state.courseLevelTypeId == 2)) &&
+									<MDBRow>
+										<MDBCol lg="12" className="mb-r">
+											<MDBSelect outline label="Students Are Generally Grouped By" getValue={this.courseGroupChange.bind(this)}>
+									        	<MDBSelectInput className="coursegroup" selected="Select" />
+										        <MDBSelectOptions>
+										        	<MDBSelectOption value="">Select</MDBSelectOption>
+										        	{this.state.courseLevelGroupLists.map((courseGroup, index)=>(
+										        			<MDBSelectOption value={courseGroup.CourseLevelGroupId}>{courseGroup.CourseLevelGroupName}</MDBSelectOption>
+										        		)
+										        	)}
+										        </MDBSelectOptions>
+									        </MDBSelect>
+									        <CourseFieldError formRulesObject = {formRules[1]} />
+									    </MDBCol>
+									</MDBRow>
+								}
+
+								{/* This course is for select box */}
+								{this.state.courseIsFor == true &&
+								<MDBRow>
+									<MDBCol lg="12" className="mb-r">
+										<MDBSelect outline multiple label="This Course Is For" getValue={this.courseIsChange.bind(this)}>
+								        	<MDBSelectInput className="courseisfor" selected="Select" />
+									        <MDBSelectOptions>
+									        	{this.state.groupLevelStreamLists.map((groupStream, index)=>(
+									        			<MDBSelectOption value={groupStream.CourseIsForId}>{groupStream.GroupLevelStreamName}</MDBSelectOption>
+									        		)
+									        	)}
+									        </MDBSelectOptions>
+								        </MDBSelect>
+								        <CourseFieldError formRulesObject = {formRules[2]} />
+								    </MDBCol>
+								</MDBRow>
+								}
+
+								{/* Others textbox */}
+								{this.state.courseLevelTypeId == 5 &&
+									<MDBRow>
+										<MDBCol lg="12" className="mb-r">
+											<MDBInput outline type="text" onChange={this.handleChange} className="form-control" label="Others"/>
+										</MDBCol>
+									</MDBRow>
+								}
+
+								{/* Age from and to */}
+								{ ((this.state.courseLevelTypeId == 1) || (this.state.courseLevelTypeId == 4) ||
+									(this.state.courseLevelTypeId == 5)) &&
+									<MDBRow>
+										<MDBCol col-md="12">
+											<MDBRow>
+									 			 <MDBCol col-md="6">
+													<MDBSelect outline getValue={this.setAgeFrom.bind(this)}>
+														<MDBSelectInput className="agefrom" selected="Age From" />
+														<MDBSelectOptions >
+															<MDBSelectOption disabled>Age From</MDBSelectOption>
+															{this.getAgeFrom()}
+														</MDBSelectOptions>
+													</MDBSelect>
+												</MDBCol>
+												<MDBCol col-md="6">
+													<MDBSelect outline getValue={this.setAgeTo.bind(this)}>
+														<MDBSelectInput className="ageto" selected="Age To" />
+														<MDBSelectOptions >
+															<MDBSelectOption selected value="And Above">And Above</MDBSelectOption>
+															<MDBSelectOption value="And Below">And Below</MDBSelectOption>
+															<MDBSelectOption value="Only">Only</MDBSelectOption>
+															{this.state.ageTo.map((ageToLists, index)=>(
+												        			<MDBSelectOption value={ageToLists}>{ageToLists}</MDBSelectOption>
+												        		)
+												        	)}
+														</MDBSelectOptions>
+													</MDBSelect>
+									 			</MDBCol>
+									 		</MDBRow>
+									 		<CourseFieldError formRulesObject = {formRules[3]} />
+								 		</MDBCol>
+						 			</MDBRow>
+					 			}
+
+					 			{/* Course stream select box */}
+					 			{ ((this.state.courseLevelTypeId == 1) || (this.state.courseLevelTypeId == 2)
+									|| (this.state.courseLevelTypeId == 3)) &&
+									<MDBRow>
+										<MDBCol lg="12" className="mb-r" >
+											<MDBSelect multiple outline getValue={this.courseFallStreamChange.bind(this)} label="Course Falls In The Stream Of">
+									        	<MDBSelectInput className="courseFallStreamCls" selected="Select" />
+										        <MDBSelectOptions>
+										        	<MDBSelectOption value="">Select</MDBSelectOption>
+										        	{this.state.courseFallStreamLists.map((courseStream, index)=>(
+										        			<MDBSelectOption value={courseStream.CourseFallStreamId}>{courseStream.CourseLevelStreamName}</MDBSelectOption>
+										        		)
+										        	)}
+										        </MDBSelectOptions>
+									        </MDBSelect>
+									    </MDBCol>
+									</MDBRow>
+								}
+
+								{/* Course Department */}
+								{this.state.courseLevelTypeId == 3 &&
+									<MDBRow>
+			  					 		<MDBCol lg="12" className="mb-r">
+									        {
+												this.state.departments.map((department, index)=>{
+													return(
+														<div key={index}>
+					 										<MDBRow>
+					 											<MDBCol col md="11">
+																	<MDBInput type="text" rounded value={department} onChange={(e)=>this.handleDepartment(e,index)} outline label="Enter Your Department"></MDBInput>
+																</MDBCol>
+																<MDBCol col md="1">
+																	<MDBIcon className="ali" icon="trash" onClick={()=>this.handleremove(index)}></MDBIcon>
+																</MDBCol>
+															</MDBRow>
+														</div>
+													)
+												})
+									        }
+					        			<MDBBtn color="primary" size="md" rounded onClick={(e)=>this.addnewdepartment(e)}>ADD  Department</MDBBtn>
+					        			</MDBCol>
+					        		</MDBRow>
+				        		}
+
+								{/* Course type */}
+								<MDBRow>
+									<MDBCol lg="12" className="mb-r">
+										<MDBSelect outline getValue={this.courseTypeChange.bind(this)} label="Course Type">
+								        	<MDBSelectInput className="form-control coursetype" selected="Select" />
+									        <MDBSelectOptions>
+									        	<MDBSelectOption value="">Select</MDBSelectOption>
+									        	<MDBSelectOption value="1">Official</MDBSelectOption>
+									        	<MDBSelectOption value="2">Tuition/ Training</MDBSelectOption>
+									        </MDBSelectOptions>
+								        </MDBSelect>
+										<CourseFieldError formRulesObject = {formRules[4]} />
+									</MDBCol>
+								</MDBRow>
+
+								{/* Course Checkbox */}
+								<MDBRow>
+									<MDBCol lg="12" className="mb-r">
+										<div>This Is An Official Course Of</div>
+										<MDBInput label="Anna University" type="checkbox" id="checkbox2" />
+									</MDBCol>
+								</MDBRow>
+
+					 			{/* Course name */}
+								<MDBRow>
+									<MDBCol lg="12" className="mb-r">
+										<MDBInput 
+											outline 
+											name="courseNameData"
+											type="text" 
+											onChange={this.handleChange} 
+											className="form-control coursename" 
+											label="Course Name"
+										/>
+										<CourseFieldError formRulesObject = {formRules[5]} />
+									</MDBCol>
+								</MDBRow>
+
+								{/* Upload course image */}
+								<MDBRow>
+									<MDBCol lg="12">
+										<div>Course Logo</div><br/>
+										<CourseLogo 
+											SetCourseLogoPath={this.setCourseLogo}
+										/>
+									</MDBCol>
+								</MDBRow>
+
+								{/* Course Description */}
+								<MDBRow>
+									<MDBCol lg="12">
+										<MDBInput name="courseDescriptionData" onChange={this.handleChange} type="textarea" outline label="Description" rows="3" />
+									</MDBCol>
+								</MDBRow>
+
+								{/* Course from and end dates */}
+								<MDBRow>
+									<MDBCol md="6">
+										<MDBDatePicker style={{width: '100%'}} />
+									</MDBCol>
+									<MDBCol md="6">
+										<MDBDatePicker style={{width: '100%'}} />
+									</MDBCol>
+								</MDBRow>
+								<br/>
+
+								{/* Seach Tags Section */}
+								<MDBRow>
+									<MDBCol lg="12" className="mb-r">
+										<MDBChipsInput outline placeholder="Enter tags to search" />
+									</MDBCol>
+								</MDBRow>
+
+								{/* Below Button Section */}
+								<MDBRow>
+									<MDBCol lg="12" className="mb-r">
+										<MDBBtn color="primary" onClick={this.validateForm} >
+										Next
+										</MDBBtn>
+									</MDBCol>
+								</MDBRow>
+							</MDBContainer>
+						</div>
+						<br/>
+					</MDBContainer>
+				</MDBCard>
+			</MDBContainer>
+		)
+	}
+
+}
+
+export default CreateCourse;

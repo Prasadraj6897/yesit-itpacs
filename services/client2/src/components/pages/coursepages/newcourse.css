@@ -1,0 +1,354 @@
+body{
+  color: #2a2929 !important;
+  letter-spacing: 0.5px;
+}
+
+h3 {
+  margin-left: 15px;
+}
+.fileInput {
+  border-bottom: 2px solid #d3d3d3;
+  border-right: 2px solid #d3d3d3;
+  border-top: 1px solid #000;
+  border-left: 1px solid #000;
+  padding: 5px;
+  margin: 5px;
+  cursor: pointer;
+}
+.imgPreview {
+  text-align: center;
+  margin: 5px 15px;
+  height: 100;
+  width: 100px;
+  border-left: 1px solid #808080;
+  border-right: 1px solid #808080;
+  border-top: 5px solid #808080;
+  border-bottom: 5px solid #808080;
+}
+.imgPreview img {
+  width: 100%;
+  height: 100%;
+}
+.previewText {
+  width: 100%;
+  margin-top: 20px;
+}
+.submitButton {
+  padding: 12px;
+  margin-left: 10px;
+  background: #fff;
+  border: 4px solid #d3d3d3;
+  border-radius: 15px;
+  font-weight: 700;
+  font-size: 10pt;
+  cursor: pointer;
+}
+.submitButton:hover {
+  background: #efefef;
+}
+.centerText {
+  text-align: center;
+  width: 500px;
+}
+.text{
+    padding-top: 10px;
+    margin-inline-start:10px;
+    margin: 0;
+}
+/*.text-right{
+    text-align: right;
+    display: block;
+    font-size: 16px;
+    color:#808080;
+    margin-top: -20px;
+    font-size: 14px;
+}*/
+.input-group.md-form.form-sm.form-1 input {
+    border: 1px solid #bdbdbd;
+    border-top-right-radius: 0.25rem;
+    border-bottom-right-radius: 0.25rem;
+}
+/*.text-left{
+    text-align: right;
+    display: block;
+    font-size: 16px;
+    color:#808080;
+    margin-top: -20px;
+    font-size: 10px;
+}*/
+.contentBox{
+  border: 1px solid #d3d3d3;
+  border-radius: 5px;
+  padding-bottom: 10px;
+}
+.text-center{
+  text-align: center;
+}
+.customBox{
+  box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.16), 0 2px 10px 0 rgba(0, 0, 0, 0.12);
+  border-radius: 5px;
+}
+.TopRightCorner{
+  position: absolute;
+  right: 15px;
+  top: 0px;
+}
+.RightBoldLabel{
+  font-weight: bold;
+  text-align: right;
+}
+.text-rightalign{
+    text-align: right;
+    display: block;
+    font-size: 16px;
+    color:#808080;
+    margin-top: -20px;
+    font-size: 10px;
+}
+.input-group.md-form.form-sm.form-1 input {
+    border: 1px solid #bdbdbd;
+    border-top-right-radius: 0.25rem;
+    border-bottom-right-radius: 0.25rem;
+}
+.text-leftalign{
+    display: block;
+    font-size: 16px;
+    color:#808080;
+    margin-top: -20px;
+    font-size: 10px;
+}
+.videoframe{
+    height:85px;
+    width: 85%;
+}
+.GradeContent{
+  background-color: #E4E8EB;
+  width: 100%;
+  float:left;
+}
+.modaltext{
+   margin-inline-start:12px;
+}
+.GradeContentHeader{
+  background-color: #4D4D4D;
+  padding: 5px 10px;
+  width: 100%;
+  float: left;
+  color: #FFF;
+}
+.GHeaderLeft{
+  width: 60%;
+  float: left;
+}
+.GHeaderRight{
+  width: 40%;
+  float: left;
+}
+.GradeContentRow{
+  width: 100%;
+  float: left;
+  padding: 5px 10px;
+  border-bottom: 1px dotted #4D4D4D
+}
+.contentbox{
+  border: 1px solid #d3d3d3;
+  padding: 10px;
+  border-radius: 10px;
+}
+.success {
+color: green;
+font-size: 8px;
+}
+.error {
+color: red;
+font-size: 8px;
+}
+.text-desc{
+    display: block;
+    font-size: 16px;
+    color:#808080;
+    /*margin-top: 10px;*/
+}
+.labeltext{
+  font-weight: bold;
+  margin-bottom: -10px;
+  font-size: 15px;
+  margin-inline-start:10px;
+}
+.handtitle{
+  background-color: #d8d8d8;
+}
+.handlist{
+  background-color: #f0f0f5;
+  margin-left: 70px;
+}
+.removecategory{
+  float: right;
+}
+.addcategory{
+  float: left;
+  padding-left: 100px;
+}
+.textarea{
+  border-radius: 10px;
+}
+
+/* Below CSS for Check box for test type in Assignment section in resource page*/
+.questioncheckbox{
+  padding-block-start: 15px;
+}
+.answercheckbox{
+  padding-block-start: 15px ;
+  padding-left: 45px ;
+}
+/* End Below CSS for Check box for test type in Assignment section in resource page*/
+
+/* Below CSS for delete for test type in Assignment section in resource page*/
+.iconAlign{
+    text-align: center;
+    padding-top: 27px;
+}
+.addAnsicon{
+  float: right;
+  padding-right: 60px;
+  color :#29bb9c !important;
+}
+/* End Below CSS for delete  for test type in Assignment section in resource page*/
+.categoryalign{
+  margin-left: 86px; 
+}
+.truefalseradio{
+  padding-left: 45px ;
+}
+.marksalign{
+  padding-left: 90px ;
+}
+.fleft{
+  float: left !important;
+}
+.right{
+  float: right !important;
+}
+
+/* Below CSS are common for all */
+.padding10px{
+  padding: 10px !important;
+}
+.padding70px{
+  padding: 70px !important;
+}
+
+.marginBottom10px{
+  margin-bottom: 20px !important;
+}
+.marginTop0px{
+  margin-top: 0px !important;
+}
+/* End Below CSS are common for all */
+
+/* Below CSS for Course List and Course Details Resource count design*/
+.CourseResourcesCls .fa{
+  font-size: 20px;
+}
+.CourseResourcesCls{
+  line-height: 30px;
+}
+.CourseResourcesCls .fa-video-camera{
+  color: #74c204;
+}
+.CourseResourcesCls .fa-file-text{
+  color: #3487cc;
+}
+.CourseResourcesCls .fa-file{
+  color: #c05555;
+}
+.CourseResourcesCls .fa-desktop{
+  color: #f8c517;
+}
+.CourseResourcesCls i{
+  width: 25px;
+}
+/* End Below CSS for Course List and Course Details Resource count design*/
+
+/* Below CSS for Module sections in create course step two */
+.TextWidthIconCls{
+  display: flex;
+}
+.TextWidthIconCls div{
+  width: 80%;
+  margin-bottom: 0px !important;
+}
+.TextWidthIconCls i {
+  position: relative;
+  top: 32px;
+  left: 10px;
+}
+.ModuleListsCls{
+  width: 80%;
+}
+.ModuleListsCls .list-group-item{
+  border: 0px !important;
+  margin-bottom: 3px;
+  background-color: #f6f6f6; 
+}
+.ModuleListsCls i{
+  font-size: 20px !important;
+}
+/* End Below CSS for Module sections in create course step two */
+
+/* Below CSS for Handout sections in create course step two */
+.HandoutFormCls .md-form{
+  margin-top: 0px !important;
+}
+.HandoutFormCls .file-field .btn{
+  margin: 0px !important;
+}
+.HandoutBodyCls{
+  background-color: #fcfcfc;
+  border-radius: 5px;
+}
+.iconPosition i{
+  position: relative;
+  top: 18px;
+}
+.ListsHead{
+  background-color: #d8d8d8;
+  padding-left: 0px !important; 
+}
+.ListsHeadRow{
+  margin-left: 0px !important;
+  margin-right: 0px !important;
+}
+.textHeader, .textContent{
+  top: 15px;
+  text-align: center;
+}
+/* End Below CSS for Handout sections in create course step two */
+
+/* Below CSS for Video sections in create course step two */
+.VideoFormCls .md-form{
+  margin-top: 0px !important;
+}
+
+/* End Below CSS for Video sections in create course step two */
+
+/* Below CSS for Enrollment sections in create course step three */
+.EnrollmentFormCls .md-form{
+  margin-top: 0px !important;
+}
+
+.BatchIconCls{
+  display: flex;
+}
+
+.BatchIconCls i {
+  position: relative;
+  top: 10px;
+  left: 10px;
+}
+
+.BatchIconCls div{
+  width: 80%;
+  margin-bottom: 0px !important;
+}
+/* End Below CSS for Enrollment sections in create course step three */

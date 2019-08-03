@@ -1,0 +1,440 @@
+import React from 'react';
+import { 
+	MDBRow,
+	MDBCol,
+	MDBCard,
+	MDBView,
+	MDBCardBody,
+	MDBInput,
+	MDBContainer,
+	MDBAvatar,
+	MDBBtn,
+	MDBFileInput,
+	MDBModal,
+	MDBStepper, MDBStep, MDBSelect, MDBIcon, MDBDatePicker, MDBChipsInput,MDBSelectInput, MDBSelectOptions, MDBSelectOption, MDBModalBody, MDBModalHeader, MDBModalFooter, MDBTable, MDBTableBody, MDBTableHead, MDBFormInline
+} from 'mdbreact';
+import './newcourse.css'
+import axios from 'axios'
+import ReactDOM from 'react-dom';
+import CourseError from "./course_field_error.js"
+import {AssignmentFormRules} from "./course_form_rules.js"
+
+class Questions extends React.Component{
+	constructor(props){
+		super(props)
+		this.state={
+			questionArr:[0],
+			answerArr:[0,1,2,3],
+			checkarr:[],
+			selectedOption:"",
+			multipleselectedOption:"",
+			formdata:{
+				question:""
+			}
+		}
+		this.addQues = this.addQues.bind(this)
+		this.addAns = this.addAns.bind(this)
+		this.removeQ = this.removeQ.bind(this)
+	}
+
+	addQues(){
+		const item = {
+			name: ""
+		}
+		this.setState({
+			questionArr: [...this.state.questionArr, item]
+		})
+	}
+
+	addAns(){
+		const item = {
+			name: ""
+		}
+		this.setState({
+			answerArr: [...this.state.answerArr, item]
+		})
+	}
+
+	removeQues(qidx){
+		let qArr = [...this.state.questionArr]
+		qArr.splice(qidx, 1)
+		this.setState({
+			questionArr: qArr
+		})
+	}
+	handleTFCheckboxchange(e, idx){
+		const tf = e.target.checked
+		if(tf)
+		{
+			this.state.checkarr.push(idx)
+		}
+		else if(!tf)
+		{
+			const array = [...this.state.checkarr]
+
+			const aay=array.splice(e.target.id, 1)
+    		this.setState({
+    			checkarr: aay
+    		});
+			console.log(this.state.checkarr)
+		}
+
+	}
+	removeAns(aidx){
+		let AnArr = [...this.state.answerArr]
+		AnArr.splice(aidx, 1)
+		this.setState({
+			answerArr: AnArr
+		})
+	}
+
+	handleQuesinputchange(e,index){
+		const { name, value } = e.target;
+		let questionArr = [...this.state.questionArr];
+		questionArr[index] = {...questionArr[index], [name]: value};
+		this.setState({ 
+			questionArr
+		})
+
+		this.props.GetQuestions(this.state.questionArr)
+	}
+
+	handleAnsinputchange(index,e){
+		const { name, value } = e.target;
+		let answerArr = [...this.state.answerArr];
+		answerArr[index] = {...answerArr[index], [name]: value};
+		this.setState({ 
+			answerArr
+		})
+	}
+
+	handleCategory(e){
+		e.preventDefault()
+		const node = ReactDOM.findDOMNode(this);
+
+		if(e.target.className=='addcategory')
+		{
+			node.querySelector('#Quescategory'+e.target.id).style = "display: block"
+		}
+		else
+		{
+			node.querySelector('#Quescategory'+e.target.id).style = "display: none"
+		}
+	}
+
+	removeQ(){
+		const index = [...this.state.checkarr]
+		let qArr = [...this.state.questionArr]
+		qArr.map((input, index)=>(
+			qArr.splice(index, 1)
+		))
+		console.log(qArr)
+		this.setState({
+			questionArr: qArr
+		})
+	}
+	handleOptionChange(e) {
+		console.log(e.target.value)
+		this.setState({
+			selectedOption: e.target.value
+		})
+	}
+	multipleradiochange = (e) =>{
+		console.log(e.target.id)
+		this.setState({
+			multipleselectedOption: e.target.id
+		})
+	}
+
+	render(){
+		return(
+			<div>
+				{this.props.QuetionType == 1 &&
+					this.state.questionArr.map((input,qidx)=>{
+			 			return (
+							<div key={qidx}>
+								<span class="labeltext">Question {qidx+1}</span>
+					     		<MDBRow>
+					     			<MDBCol md="12">
+							     		<MDBRow>
+											<MDBCol col md="1" className="questioncheckbox" >
+												<MDBInput type="checkbox" id={qidx} label = " " onChange={(e)=>this.handleTFCheckboxchange(e,qidx)}/>
+											</MDBCol>
+											<MDBCol md="11">
+												<MDBInput type="textarea" className="textarea" label="Type Your Question" name="question" value={input.question ||''}  outline onChange={(e)=>this.handleQuesinputchange(e,qidx)} />
+											</MDBCol>
+										</MDBRow>
+										<MDBCol md="12" className="truefalseradio">
+											<MDBInput checked={this.state.selectedOption==="tid" ? true : false} label="True" type="radio" id="tid" onClick={(e)=>this.handleOptionChange(e)}/>
+											<MDBInput checked={this.state.selectedOption==="fid" ? true : false} label="False" type="radio" id="fid" onClick={(e)=>this.handleOptionChange(e)}/>
+										</MDBCol>
+
+										<div >
+											<a href="#" class="text-decoration-none" id={qidx} onClick={(e)=>this.handleCategory(e)} class="addcategory">Add Category </a>
+										</div>
+										<br />
+
+										<MDBRow>
+											<MDBCol md="6" className="categoryalign">
+												<div style={{display:"none"}} id={"Quescategory"+qidx}>
+													<span class="labeltext">Category 1</span>
+													<MDBInput type="text" label="Category Name" outline/>
+
+													<span class="labeltext">Category 2</span>
+													<MDBInput type="text" label="Category Name" outline/>
+
+													<span class="labeltext">Free Text 1</span>
+													<MDBInput type="text" label="Free Text" outline/>
+
+													<span class="labeltext">Free Text 2</span>
+													<MDBInput type="text" label="Free Text" outline/>
+
+													<a href="#" style={{float:"left"}} class="text-decoration-none" onClick={(e)=>this.handleCategory(e)} id={qidx} className="removecategory">Remove Category </a>
+													<br />
+												</div>
+											</MDBCol>
+										</MDBRow>
+										<MDBRow>
+											<MDBCol md="6" className="marksalign">
+												<h6 class="labeltext">Marks *</h6>
+												<MDBInput type="text" label="Type Your Marks" outline name="marks"/>
+											</MDBCol>
+										</MDBRow>
+										<MDBBtn color="primary" size="md" rounded type="submit" onClick={this.removeQues.bind(this, qidx)}>Remove Question</MDBBtn>
+									</MDBCol>
+								</MDBRow>
+								
+							</div>
+						)
+					})
+				}
+
+				{this.props.QuetionType == 2 &&
+					this.state.questionArr.map((input,qidx)=>{
+						return (
+							<div key={qidx}>
+								<span class="labeltext">Question {qidx+1}</span>
+								<MDBRow>
+					     			<MDBCol md="12">
+										<MDBRow>
+											<MDBCol col md="1" className="questioncheckbox">
+												 <MDBInput type="checkbox" id={qidx} label=" " />
+											</MDBCol>
+											<MDBCol md="11">
+												<MDBInput type="textarea" className="textarea" label="Type Your Question" outline name="question" name="question" value={input.question ||''}  outline onChange={(e)=>this.handleQuesinputchange(e,qidx)} />
+											</MDBCol>
+										</MDBRow>
+
+										{this.state.answerArr.map((input,index2) => {
+											const n = qidx+""+index2
+											return (
+												<div key={index2}>
+													<MDBRow>
+														<MDBCol col md="1" className="answercheckbox">
+															<MDBInput type="checkbox" id={n} label=" " />
+														</MDBCol>
+														<MDBCol md="10">
+															<MDBInput type="text" label="provide your answers here" outline  name="answer" value={input.answer ||''}  outline onChange={this.handleAnsinputchange.bind(this,index2)}/>
+														</MDBCol>
+														<MDBCol md="1">
+															<MDBIcon icon="times" className="iconAlign" onClick={this.removeAns.bind(this, index2)} id={n} />
+														</MDBCol>
+													</MDBRow>
+												</div>
+											)
+										})
+										}
+										<MDBIcon type="submit" icon="plus" onClick={this.addAns} className="addAnsicon" /> 
+
+										<div >
+											<a href="#" class="text-decoration-none" id={qidx} onClick={(e)=>this.handleCategory(e)} class="addcategory">Add Category </a>
+										</div>
+										<br />
+
+										<MDBRow>
+											<MDBCol md="6" className="categoryalign">
+												<div style={{display:"none"}} id={"Quescategory"+qidx}>
+													<span class="labeltext">Category 1</span>
+													<MDBInput type="text" label="Category Name" outline/>
+
+													<span class="labeltext">Category 2</span>
+													<MDBInput type="text" label="Category Name" outline/>
+
+													<span class="labeltext">Free Text 1</span>
+													<MDBInput type="text" label="Free Text" outline/>
+
+													<span class="labeltext">Free Text 2</span>
+													<MDBInput type="text" label="Free Text" outline/>
+
+													<a href="#" style={{float:"left"}} class="text-decoration-none" onClick={(e)=>this.handleCategory(e)} id={qidx} className="removecategory">Remove Category </a>
+													<br />
+												</div>
+											</MDBCol>
+										</MDBRow>
+										<MDBRow>
+											<MDBCol md="6" className="marksalign">
+												<br />
+												<h6 class="labeltext">Marks *</h6>
+												<MDBInput type="text" label="Type Your Marks" outline name="marks"/>
+											</MDBCol>
+										</MDBRow>
+										<MDBBtn color="primary" size="md" rounded type="submit" onClick={this.removeQues.bind(this, qidx)}>Remove Question</MDBBtn>
+									</MDBCol>
+								</MDBRow>
+							</div>
+						)
+					})
+				}
+
+				{this.props.QuetionType == 3 &&
+					this.state.questionArr.map((input,qidx)=>{
+			 			return (
+							<div key={qidx}>
+								<span class="labeltext">Question {qidx+1}</span>
+								<MDBRow>
+				     				<MDBCol md="12">
+										<MDBRow>
+											<MDBCol col md="1" className="questioncheckbox">
+												<MDBInput id={qidx} className="iconAlign" type="checkbox" label=" " />
+											</MDBCol>
+											<MDBCol md="11">
+												<MDBInput type="textarea" className="textarea" label="Type Your Question" name="question" value={input.question ||''}  outline onChange={(e)=>this.handleQuesinputchange(e,qidx)} outline />
+											</MDBCol>
+										</MDBRow>
+
+										{this.state.answerArr.map((input,index2) => {
+											const n = qidx+""+index2
+											const qi = qidx
+											return (
+												<div key={n}>
+													<MDBRow>
+														<MDBCol col md="1" className="answercheckbox">
+															<MDBInput type="radio" label=" " name={qi} id={n} checked={this.state.multipleselectedOption===n ? true : false} onChange = {(e)=>this.multipleradiochange(e)}/>
+														</MDBCol>
+														<MDBCol md="10">
+															<MDBInput type="text" label="provide your answers here" outline name="answer" value={input.answer ||''}  outline onChange={this.handleAnsinputchange.bind(this,index2)}/>
+														</MDBCol>
+														<MDBCol md="1">
+															<MDBIcon icon="times" onClick={this.removeAns.bind(this, index2)} className="iconAlign" id={n}/>
+														</MDBCol>
+													</MDBRow>
+												</div>
+											)
+										})
+										}
+										<MDBIcon type="submit" icon="plus" onClick={this.addAns} className="addAnsicon" /> 
+
+										<div >
+											<a href="#" class="text-decoration-none" id={qidx} onClick={(e)=>this.handleCategory(e)} class="addcategory">Add Category </a>
+										</div>
+										<br />
+									
+										<MDBRow>
+											<MDBCol md="6" className="categoryalign">
+												<div style={{display:"none"}} id={"Quescategory"+qidx}>
+													<span class="labeltext">Category 1</span>
+													<MDBInput type="text" label="Category Name" outline/>
+
+													<span class="labeltext">Category 2</span>
+													<MDBInput type="text" label="Category Name" outline/>
+
+													<span class="labeltext">Free Text 1</span>
+													<MDBInput type="text" label="Free Text" outline/>
+
+													<span class="labeltext">Free Text 2</span>
+													<MDBInput type="text" label="Free Text" outline/>
+
+													<a href="#" style={{float:"left"}} class="text-decoration-none" onClick={(e)=>this.handleCategory(e)} id={qidx} className="removecategory">Remove Category </a>
+													<br />
+												</div>
+											</MDBCol>
+										</MDBRow>
+										<MDBRow>
+											<MDBCol md="6" className="marksalign">
+												<br />
+												<h6 class="labeltext">Marks *</h6>
+												<MDBInput type="text" label="Type Your Marks" outline name="marks"/>
+											</MDBCol>
+										</MDBRow>
+										<MDBBtn color="primary" size="md" rounded type="submit" onClick={this.removeQues.bind(this, qidx)}>Remove Question</MDBBtn>
+									</MDBCol>
+								</MDBRow>
+							</div>
+						)
+					})
+				}
+
+				{this.props.QuetionType == 4 &&
+					this.state.questionArr.map((input,qidx)=>{
+			 			return (
+							<div key={qidx}>
+								<span class="labeltext">Question {qidx+1}</span>
+								<MDBRow>
+					     			<MDBCol md="12">
+										<MDBRow>
+											<MDBCol md="1" className="questioncheckbox">
+												<MDBInput type="checkbox" id={qidx} label=" "/>
+											</MDBCol>
+											<MDBCol md="11">
+												<MDBInput type="textarea" className="textarea" label="Type Your Question" name="question" value={input.question ||''}  outline onChange={(e)=>this.handleQuesinputchange(e,qidx)} outline/>
+											</MDBCol>
+										</MDBRow>
+
+										<MDBRow>
+											<MDBCol col md="1" >
+											</MDBCol>
+											<MDBCol md="11">
+												<MDBInput type="textarea" label="Provide your answers here" outline />
+											</MDBCol>
+										</MDBRow>
+
+										<div >
+											<a href="#" class="text-decoration-none" id={qidx} onClick={(e)=>this.handleCategory(e)} class="addcategory">Add Category </a>
+										</div>
+										<br />
+
+										<MDBRow>
+											<MDBCol md="6" className="categoryalign">
+												<div style={{display:"none"}} id={"Quescategory"+qidx}>
+													<span class="labeltext">Category 1</span>
+													<MDBInput type="text" label="Category Name" outline/>
+
+													<span class="labeltext">Category 2</span>
+													<MDBInput type="text" label="Category Name" outline/>
+
+													<span class="labeltext">Free Text 1</span>
+													<MDBInput type="text" label="Free Text" outline/>
+
+													<span class="labeltext">Free Text 2</span>
+													<MDBInput type="text" label="Free Text" outline/>
+
+													<a href="#" style={{float:"left"}} class="text-decoration-none" id={qidx} className="removecategory" onClick={(e)=>this.handleCategory(e)}>Remove Category </a>
+													<br />
+												</div>
+											</MDBCol>
+										</MDBRow>
+										<MDBRow>
+											<MDBCol md="6" className="marksalign">
+												<br />
+												<h6 class="labeltext">Marks *</h6>
+												<MDBInput type="text" label="Type Your Marks" outline  name="marks"/>
+											</MDBCol>
+										</MDBRow>
+										
+										<MDBBtn color="primary" size="md" rounded type="submit" id={qidx} onClick={this.removeQues.bind(this, qidx)} >Remove Question</MDBBtn>
+									</MDBCol>
+								</MDBRow>
+							</div>
+						)
+					})
+				}
+			
+				<MDBBtn color="primary" size="md" rounded type="submit" onClick={this.addQues}> Add new Question </MDBBtn>
+				{/*<MDBBtn color="primary" size="md" rounded type="submit" onClick={this.removeQ}>Remove Question</MDBBtn>*/}
+			</div>
+		)
+		
+	}
+
+}
+export default Questions 

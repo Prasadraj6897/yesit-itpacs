@@ -1,0 +1,390 @@
+import React from 'react';
+import { 
+	MDBRow,
+	MDBCol,
+	MDBCard,
+	MDBView,
+	MDBCardBody,
+	MDBInput,
+	MDBContainer,
+	MDBAvatar,
+	MDBBtn,
+	MDBFileInput,
+	MDBModal,
+	MDBStepper, MDBStep, MDBSelect, MDBIcon, MDBDatePicker, MDBChipsInput,MDBSelectInput, MDBSelectOptions, MDBSelectOption
+} from 'mdbreact';
+import './newcourse.css'
+import axios from 'axios'
+import {HandoutFormRules} from "./course_form_rules.js"
+import CourseError from "./course_field_error.js"
+import ReactDOM from 'react-dom';
+
+class Handouts extends React.Component{
+	constructor(props){
+		super(props)
+			this.state={
+				newhandoutclick:true,
+				newhandoutinput:false,
+				max_chars:200,
+				chars_left:200,
+				value:'',
+				library:false,
+				handout:[],
+				inputbox:"",
+				othersbox:false,
+				HandoutFormRules:HandoutFormRules,
+				valid:false,
+				imagevalid:false,
+				formData:{
+					handoutname:'',
+					description:'',
+					document_name:'',
+					document_ext:'',
+					document_size:'',
+					createddate : '',
+				},
+				gethandoutdocs:[],
+				showhandout:false,
+				isAllSelected: false,
+			};
+		this.newhandout=this.newhandout.bind(this)
+		this.gethandout=this.gethandout.bind(this)
+	}
+	newhandout(e){
+		this.setState({
+			newhandoutclick:false,
+			newhandoutinput:true,
+			library:false,
+		});
+	}
+	addfromlibrary(){
+		this.setState({
+			newhandoutclick:false,
+			newhandoutinput:false,
+			library:true,
+		})
+	}
+	clicknewhandout(){
+		alert("clicknewhandout")
+	}
+	// get_module(e){
+		
+	// 	this.setState({
+	// 		inputbox:(
+	// 			<MDBRow>
+	// 				<MDBCol col md="11">
+	// 					<MDBInput type="text" rounded  outline label="Enter Your Department"></MDBInput>
+	// 				</MDBCol>
+	// 				<MDBCol col md="1">
+	// 					<MDBIcon icon="trash" onClick={this.othersclose()}></MDBIcon>
+	// 				</MDBCol>
+	// 			</MDBRow>
+	// 		),
+	// 		othersbox:true
+	// 	})
+	// }
+	// othersclose(){
+	// 	this.setState({
+	// 		othersbox:false
+	// 	})
+	// }
+	handleCharlength(event) {
+		// console.log(event)
+		var input = event.target.value;
+		this.setState({
+			chars_left: this.state.max_chars - input.length
+		});
+	}
+	closehandout()
+	{	this.setState({
+			newhandoutclick:true,
+			newhandoutinput:false,
+			library:false,
+
+		})
+		const formRules=this.state.HandoutFormRules
+		for(const rules of formRules)
+		{
+			rules.valid=false
+		}
+	}
+	handletags(e){
+		//console.log(e)
+		this.setState({
+		 	value: e.target.value,
+		 })
+	}
+	componentDidMount(){
+		this.gethandout()
+		this.gethandoutdoc()
+	}
+	gethandout=(e)=>{
+		const options = {
+			url: `${process.env.REACT_APP_COURSES_SERVICE_URL}/courses/gethandoutmenu`,
+			method: 'get',
+			headers: {
+				'Content-Type': 'application/json',
+				Authorization: `Bearer ${window.localStorage.authToken}`
+			}
+		}
+		return axios(options)
+		.then((res)=>{
+			//console.log(res.data)
+			this.setState({
+				handout : res.data.handout
+			})
+		})
+		.catch((error)=>{console.log(error)})
+
+	}
+	handlechange=(e)=>{
+		const obj = this.state.formData
+		obj[e.target.name] = e.target.value
+		this.setState(obj)
+		console.log(e.target.value)
+		this.formvalid()
+	}
+
+	formvalid(){
+		const formRules = this.state.HandoutFormRules
+		// const node = ReactDOM.findDOMNode(this);
+		// alert(node.querySelector('.browsehandout').value)
+		if(this.state.formData.handoutname.length > 2 && this.state.formData.handoutname!=''){
+			formRules[0].valid = true
+		}else{
+			formRules[0].valid = false
+		}
+		if(this.state.imagevalid){
+			formRules[1].valid=true
+		}else{
+			formRules[1].valid=false
+		}
+		this.setState({HandoutFormRules: formRules})
+		if (this.allTrue()){
+			this.setState({valid:true})
+		}else{
+			this.setState({valid:false})
+		}
+	}
+	allTrue(){
+		let formRules = HandoutFormRules
+		for (const rule of formRules){
+			if(!rule.valid) return false
+		}
+		return true
+	}
+	addtocourse(e){
+		if(this.state.valid)
+		{
+			console.log(this.state.formData)
+			const options = {
+				url: `${process.env.REACT_APP_COURSES_SERVICE_URL}/courses/inserthandout`,
+				method: 'post',
+				data: this.state.formData,
+				headers: {
+					'Content-Type': 'application/json',
+					Authorization: `Bearer ${window.localStorage.authToken}`
+				}
+			}
+			alert("You course hass been added successfully")
+			return axios(options)
+			.then((res)=>{
+				//console.log(res.data)
+			})
+			.catch((error)=>{console.log(error)})
+		}
+		else{
+			alert("You must provide valid details")
+		}
+	}
+	filechange(e){
+		console.log(e[0].name)
+		const filename=e[0].name
+		const filesize=e[0].size
+		const lastModified=e[0].lastModified
+		var date = new Date().getDate()
+		var month = new Date().getMonth() + 1
+		var year = new Date().getFullYear()
+		var createddate = date +'.'+ month +'.'+ year
+
+		const fileext=filename.split('.').pop()
+
+		if((fileext!=='')&&(fileext=="png" || fileext=="jpg" || fileext=="jpeg" || fileext=="txt" || fileext=="docx" || fileext=="doc" || fileext=="xls"))
+		{	
+			this.state.imagevalid=true
+			this.setState({
+				imagevalid:this.state.imagevalid,
+			})	
+
+			this.state.formData.document_ext = fileext
+			this.state.formData.document_name = filename
+			this.state.formData.document_size = filesize
+			this.state.formData.lastModified = lastModified
+			this.state.formData.createddate = createddate
+		}
+		else
+		{
+			this.state.imagevalid=false
+			this.setState({
+				imagevalid:this.state.imagevalid
+			})
+		}
+		this.formvalid()
+	}
+	gethandoutdoc(){
+		const options = {
+			url: `${process.env.REACT_APP_COURSES_SERVICE_URL}/courses/gethandoutdoc`,
+			method: 'get',
+			headers: {
+				'Content-Type': 'application/json',
+				Authorization: `Bearer ${window.localStorage.authToken}`
+			}
+		}
+		return axios(options)
+		.then((res)=>{
+			this.setState({
+				gethandoutdocs:res.data.handout
+			})
+			console.log(this.state.gethandoutdocs)
+		})
+		
+		.catch((error)=>{console.log(error)})
+		
+	}
+	showhandoutdoc(e){
+		console.log(e.target.checked)
+		const node = ReactDOM.findDOMNode(this);
+		if(e.target.checked)
+			node.querySelector('#HandDetails'+e.target.id).style = "display: block"
+		else
+			node.querySelector('#HandDetails'+e.target.id).style = "display: none"
+	}
+	clickall(e){
+		console.log(e.target.checked)
+		// id=e.target.id
+		// this.setState({
+		// 	id:true
+		// })
+	}
+	render(){
+		let formRules = this.state.HandoutFormRules
+		return(
+			<div class="contentbox">
+			<MDBRow>
+				<MDBCol col-md="12">
+					<h6 className="mb-0 font-weight-bold">Handouts</h6>
+					<br />
+					<MDBBtn color="primary" size="md" rounded type="submit" onClick={(e)=>this.newhandout(e)}>Upload new Handout</MDBBtn>
+					<MDBBtn color="primary" size="md" rounded type="submit" onClick={()=>this.addfromlibrary()}>Add From Library</MDBBtn>	
+
+					{(this.state.newhandoutclick) && (
+						<div >
+							<p class="text-muted" className="text-center pt-4 pb-5 mb-2">
+								You have no Handouts yet. <a href="#" class="text-decoration-none" onClick={this.clicknewhandout}>Click here </a>to add a new Handout
+							</p> 
+						</div>
+					)}
+
+					{(this.state.newhandoutinput) && (
+						<div>
+							<div>
+								<br />
+								<label class="labeltext">New Handout</label>
+								<p>The handouts added to the Course will also be available in the library</p>
+							</div>
+							<div >
+								<label class="labeltext">This is Part of the Module</label>
+								<MDBSelect  outline>
+								<MDBSelectInput selected="Select" />
+								<MDBSelectOptions>
+									<MDBSelectOption disabled>Select</MDBSelectOption>
+										{
+											this.props.ModuleLists.map((modules ,i)=>{
+												let moduleId = modules['_id']['$oid']
+												return <MDBSelectOption value={moduleId}>{modules.ModuleName}</MDBSelectOption>
+											})
+										}
+									</MDBSelectOptions>
+								</MDBSelect>
+								<span class="labeltext">Handout Name *</span>
+								<MDBInput type="text" label="Handouts Name" outline name="handoutname" onChange={(e)=>this.handlechange(e)} />
+									<CourseError
+										formRulesObject={formRules[0]}
+									/>
+								<label class="labeltext">Description</label>
+								<MDBInput type="textarea" rows="2" label="Description" outline onChange={(e)=> {this.handleCharlength(e); this.handlechange(e);}} maxLength={this.state.max_chars} name="description"/>
+								<span class="text-rightalign">Characters Left: {this.state.chars_left}</span>
+								<br />
+								<label class="labeltext">Search tags</label>
+								<br />
+								<MDBChipsInput placeholder="Enter tags to search" outline className="border border-light" value = {this.state.value} onChange={(e)=>this.handletags(e)}/>
+								<label class="labeltext">Browse Files *</label>
+								<MDBFileInput className="browsefiles" getValue={(e)=>this.filechange(e)}/>
+									<CourseError
+										formRulesObject={formRules[1]}
+									/>
+								<MDBBtn color="primary" size="md"rounded  type="submit" onClick={(e)=>this.addtocourse(e)}>Add to Course</MDBBtn>
+								<MDBBtn color="primary" size="md"rounded  type="submit" onClick={()=>this.closehandout()}>Cancel</MDBBtn>
+							</div>
+						</div>
+					)}
+
+					{(this.state.library) &&(
+						<div >
+							<br />
+							<label class="labeltext">This is Part of the Module</label>
+							<MDBSelect outline>
+							<MDBSelectInput selected="Select" />
+							<MDBSelectOptions>
+								<MDBSelectOption disabled>Select</MDBSelectOption>
+									{
+										this.state.handout.map((hand ,index)=>{
+											return <MDBSelectOption value={hand.HandoutId}>{hand.HandoutName}</MDBSelectOption>
+										})
+									}
+								</MDBSelectOptions>
+							</MDBSelect>
+							<div className="input-group md-form form-sm form-1 pl-0">
+								<div className="input-group-prepend">
+									<span className="input-group-text black lighten-3" id="basic-text1">
+										<MDBIcon className="text-white" icon="search" />
+									</span>
+								</div>
+								<input className="form-control my-0 py-1" type="text" placeholder="Search" aria-label="Search" />
+							</div>
+							<MDBRow>
+								<MDBCol md="12">
+									<div class="handtitle">	
+										<MDBInput label="Handoutname" type="checkbox" id="checkbox0" class="labeltext" onChange={(e)=>this.clickall(e)}/>
+									</div>
+									{this.state.gethandoutdocs.map((item, index) =>
+										<div>
+											<MDBRow>
+												<MDBCol md="10" >
+													<MDBInput type="checkbox" id={index} label={item.handout_name} onChange={(e)=>this.showhandoutdoc(e)} />
+												</MDBCol>
+												<MDBCol md="2">
+													<MDBIcon icon="file" id={index} onChange={(e)=>this.showhandoutdoc(e)} ></MDBIcon>
+												</MDBCol >
+											</MDBRow>
+											<div style={{display:"none"}} id={"HandDetails"+index} class="contentbox">
+												<span class="labeltext">Title :</span>{item.handout_name} <br />
+												<span class="labeltext">Description :</span>{item.description} <br />
+												<span class="labeltext">Created On :</span>{item.created_on} <br />
+												<span class="labeltext">Exercise Document :</span>{item.document_extension}<br />
+											</div>
+										</div>
+									)}
+								</MDBCol>
+							</MDBRow>
+							<MDBBtn color="primary" size="md" rounded  type="submit" >Add to Course</MDBBtn>
+							<MDBBtn color="primary" size="md" rounded  type="submit" onClick={()=>this.closehandout()}>Cancel</MDBBtn>
+						</div>
+					)}
+				</MDBCol>
+			</MDBRow>
+			</div>
+		)
+	}
+}
+export default Handouts

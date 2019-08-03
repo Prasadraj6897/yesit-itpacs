@@ -1,0 +1,347 @@
+import React from 'react'
+import {Link, Redirect} from 'react-router-dom'
+import { 
+	MDBRow,
+	MDBCol,
+	MDBCard,
+	MDBView,
+	MDBCardBody,
+	MDBInput,
+	MDBContainer,
+	MDBAvatar,
+	MDBBtn,
+	MDBFileInput,
+	MDBModal,
+	SideNavLink,
+	MDBStepper, MDBStep, MDBSelect, MDBIcon, MDBDatePicker, MDBChipsInput,MDBSelectInput, MDBSelectOptions, MDBSelectOption, MDBFormInline, MDBPopover, MDBPopoverBody, MDBPopoverHeader,
+} from 'mdbreact';
+import './newcourse.css'
+import axios from 'axios'
+import{Paymentrules} from './course_form_rules.js'
+import CourseError from './course_field_error.js'
+
+class Payments extends React.Component{
+
+	constructor(props){
+		super(props)
+		this.state={
+			email:'',
+			radio: 2,
+			paid:true,
+			editState:true,
+			newedit:false,
+			maxusers:0,
+			firstname:"",
+			lastname:"",
+			defaultemail:"",
+			Paymentrules:Paymentrules,
+			valid:true,
+			password:"",
+			addbatch:[],
+			currency:false
+		}
+	}
+
+	editpayment=()=>{
+		this.state.editState = false,
+		this.state.newedit = true,
+		this.setState({
+			editState: this.state.editState,
+			newedit: this.state.newedit
+		})
+	}
+
+	getUserDetails(event){
+		const options = {
+			url: `${process.env.REACT_APP_COURSES_SERVICE_URL}/cauth/status`,
+			method: 'get',
+			headers: {
+				'Content-Type': 'application/json',
+				Authorization: `Bearer ${window.localStorage.authToken}`
+			}
+		}
+		return axios(options)
+		.then((res)=>{
+			this.setState({
+				email: res.data.data.email,
+				firstname: res.data.data.firstname,
+				lastname: res.data.data.lastname,
+			})
+			console.log(this.state.firstname)
+			console.log(res)
+		})
+		.catch((error)=>{console.log(error)})
+	}
+	componentDidMount(){
+		this.getUserDetails()
+	}
+	radio = (value) => () => {
+		alert(value)
+		this.setState({
+			radio: value,
+			
+		});
+		if(value==1)
+		{
+			this.setState({
+				paid:false,
+			})
+		}
+		else{
+			this.setState({
+				paid:true
+			})
+		}
+		console.log(this.state.radio)
+	}
+	
+	cancel(){
+		this.setState({
+			editState:true,
+			newedit:false,
+		})
+	}
+	maxuserchange(e){
+		const re = /^[0-9\b]+$/;
+
+		// if value is not blank, then test the regex
+		if (e.target.value === '' || re.test(e.target.value)) {
+			this.setState({maxusers: e.target.value})
+		}
+	}
+	handlechange(e){
+		const obj = this.state
+		obj[e.target.name] = e.target.value
+		this.setState(obj)
+		this.formvalid()
+	}
+	getcurrencytype(e){
+		const formRules=this.state.Paymentrules
+		var currencytype=e.toString()
+		console.log(currencytype)
+
+		if(currencytype == '')
+		{
+			this.state.currency=false
+			this.setState({
+				currency:this.state.currency
+			})
+		}
+		else{
+			this.state.currency=true
+			this.setState({
+				currency:this.state.currency
+			})
+			
+		}
+		this.formvalid()
+	}
+	formvalid(){
+		const formRules=this.state.Paymentrules
+
+		var emailre= /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+		var feesre = /^[0-9\b]+$/;
+
+		{/*Email Validation*/}
+		if (emailre.test(this.state.email)){
+			formRules[0].valid = true
+		}
+		else{
+			formRules[0].valid = false
+		}
+
+		{/*Fees Validation*/}
+		if(feesre.test(this.state.fees) && (this.state.fees)!="" && this.state.currency){
+			formRules[1].valid = true
+		}
+		else{
+			formRules[1].valid = false
+		}
+
+		{/*Password Validation*/}
+		if(this.state.password.length>=8){
+			formRules[2].valid = true
+		}
+		else{
+			formRules[2].valid = false
+		}
+
+	}
+	addnewbatch(){
+		this.setState({
+			addbatch:[...this.state.addbatch,""]
+		})
+		console.log(this.state.displayInput)
+	}
+	remove(index){
+		this.state.addbatch.splice(index,1)
+		this.setState({
+			addbatch:this.state.addbatch
+		})
+   }
+	inputchange(e,index){
+		this.state.addbatch[index]=e.target.value
+		this.setState({
+			addbatch:this.state.addbatch
+		})
+	}
+	render(){
+		let formRules=this.state.Paymentrules
+		return (
+			<div class="contentbox">
+				<MDBRow>
+					<MDBCol md="12" >
+						<label class="mb-0 font-weight-bold" >Enrollment Settings</label>
+						<hr />
+
+						<MDBRow>
+							<MDBCol md="12" >
+								<label class="labeltext">Max Users</label>
+								<MDBInput type="text" outline onChange={(e)=>this.maxuserchange(e)} value={this.state.maxusers}/>
+								<span class="text-leftalign">'Enrollments Full' will appear in the published courses, after the enrollment reaches maximum.	</span>
+							</MDBCol>
+						</MDBRow>
+
+						<MDBRow>
+							<MDBCol md="12" >
+								<label class="labeltext">Notification</label>
+								<MDBSelect outline color="primary">
+									<MDBSelectInput selected="Select" />
+									<MDBSelectOptions>
+										<MDBSelectOption >Yes</MDBSelectOption>
+										<MDBSelectOption >No</MDBSelectOption>
+									</MDBSelectOptions>
+								</MDBSelect>
+								<span class="text-leftalign">A message will be triggered to the default email id when people enroll for this course.</span>
+							</MDBCol>
+						</MDBRow>
+
+						<MDBRow>
+							<MDBCol md="12" >
+								<label class="labeltext">Default Email *</label>
+								<MDBInput type="text" outline value={this.state.email} onChange={(e)=>this.handlechange(e)} name='email'/>
+								<span class="text-leftalign">This is the email which will be used to communicate information regarding this course.</span>
+								<br />
+								<CourseError
+									formRulesObject={formRules[0]}
+								/>
+							</MDBCol>
+						</MDBRow>
+
+						<MDBRow>
+							<MDBCol md="12" >
+								<label class="labeltext">Fees *</label>
+								 <MDBFormInline>
+									<MDBInput gap onClick={this.radio(1)} checked={this.state.radio===1 ? true : false} label="Free" type="radio" id="radio1" />
+									<MDBInput gap onClick={this.radio(2)} checked={this.state.radio===2 ? true : false} label="Paid" type="radio" id="radio2" />
+								 </MDBFormInline>
+							 </MDBCol>
+						</MDBRow>
+
+						 {(this.state.paid) &&(
+						 	<div>
+						 		<MDBRow>
+							 		<MDBCol md="6">
+							 		<label class="labeltext">Fees $*</label>
+							 			<MDBInput type="text" outline value={this.state.fees} onChange={(e)=>this.handlechange(e)} name="fees"/>
+						 			</MDBCol>
+						 			<MDBCol md="6">
+							 			<MDBSelect outline color="primary" getValue={(e)=>this.getcurrencytype(e)}>
+											<MDBSelectInput selected="Select" />
+											<MDBSelectOptions>
+												<MDBSelectOption >USD</MDBSelectOption>
+											</MDBSelectOptions>
+										</MDBSelect>
+									</MDBCol>
+					 			</MDBRow>
+				 				<CourseError
+									formRulesObject={formRules[1]}
+								/>
+					 			
+					 			<MDBRow>
+									<MDBCol md="12" >
+										<label class="labeltext">Service Charges</label>
+						 				<span class="text-desc">Service charges include taxes, administration, charity to sponsor education, bank transaction and iNrutura fees. This is collected as a percentage of the fees from students (approximately 20%). Example, if you price your course fees as $ 10, we will collect $ 12 from the learner. You will get paid $10. Course creators get paid the full course fees as indicated in the fees field.	</span>
+							 			<br />
+							 			<label class="labeltext">Payment Process</label>
+							 			<span class="text-desc">Payments collected from learners will be transferred to your Paypal account within 5 weeks from date of purchase after deducting the service fees provided there are no refund claims or disputes. In case of refund claims or disputes, the processing time may vary. A notification of transfer will be sent to your email id upon successful transfer to your paypal account.	</span>
+							 			<hr />
+							 			<label class="labeltext">Paypal Payment Details</label>
+							 			<hr />
+				 					</MDBCol>
+					 			</MDBRow>
+					 			{(this.state.editState) && (
+					 				<div>
+						 				<MDBRow>
+											<MDBCol md="12" >
+							 					<MDBBtn color="primary" size="md" type="submit" onClick={()=>this.editpayment()}>Edit</MDBBtn>
+							 					<br /><br />
+								 				<label ><b>Paypal Email : {this.state.email}</b></label><br />
+									 			<label ><b>First Name : {this.state.firstname}</b></label><br />
+									 			<label ><b>Last Name : {this.state.lastname}</b></label><br />
+									 			<label ><b>Country : </b></label><br />
+									 			<label ><b>State :</b></label><br />
+									 			<label ><b>City :</b></label><br />
+								 			</MDBCol>
+						 				</MDBRow>
+						 			</div>
+				 				)}
+				 				{(this.state.newedit) && (
+					 				<div class="contentbox">
+					 					<label class="labeltext">ITPACS Password *</label>
+					 					<MDBRow>
+						 					<MDBCol md="11">
+							 					<MDBInput type="text" outline placeholder="password" name="password" onChange={(e)=>this.handlechange(e)}/>
+						 					</MDBCol>
+						 					<MDBCol md="1">
+						 						<div style={{ display: "flex" }} >
+													<MDBPopover placement="bottom" popover clickable id="popper3" >
+								 						<MDBIcon className="ali" icon="info-circle" type="submit"></MDBIcon>
+														<div>
+															<MDBPopoverBody>
+																To Access your payment details, enter your iNurtura Password.
+															</MDBPopoverBody>
+														</div>
+							 						</MDBPopover>
+						 						</div>
+						 					</MDBCol>
+					 					</MDBRow>
+				 						<CourseError
+											formRulesObject={formRules[2]}
+										/>
+
+					 					<MDBBtn color="primary" size="md" rounded type="submit" >Submit</MDBBtn>
+					 					<MDBBtn color="primary" size="md" rounded type="submit" onClick={()=>this.cancel()}>Cancel</MDBBtn>
+						 			</div>
+				 				)}
+					 		</div>
+
+					 	)}
+					 	<hr />
+					 	<label class="labeltext">Batch</label>
+					 	<br />
+					 	{
+						 	this.state.addbatch.map((input,index)=>{
+						 		return(
+								 	<div key={index}>
+										<MDBRow>
+											<MDBCol md="11">
+												<MDBInput type="text" label="Batch Name" value={input} outline onChange={(e)=>this.inputchange(e,index)}/>
+											</MDBCol>
+											<MDBCol col md="1" >
+												{/*<MDBIcon className="ali" icon="save"></MDBIcon>*/}
+												<MDBIcon className="ali" icon="trash" onClick={()=>this.remove(index)}></MDBIcon>
+											</MDBCol>
+										</MDBRow>
+									</div>
+								)
+							})
+						}
+					 	<MDBBtn color="primary" size="md" rounded type="submit" onClick={(e)=>this.addnewbatch(e)}>Add New Batch</MDBBtn>
+					</MDBCol>
+				</MDBRow>
+			</div>
+		)
+	}
+}
+export default Payments

@@ -1,0 +1,670 @@
+import React from 'react';
+import { 
+	MDBRow,
+	MDBCol,
+	MDBCard,
+	MDBView,
+	MDBCardBody,
+	MDBInput,
+	MDBContainer,
+	MDBAvatar,
+	MDBBtn,
+	MDBFileInput,
+	MDBModal,
+	MDBStepper, MDBStep, MDBSelect, MDBIcon, MDBDatePicker, MDBChipsInput,MDBSelectInput, MDBSelectOptions, MDBSelectOption, MDBModalBody, MDBModalHeader, MDBModalFooter, MDBTable, MDBTableBody, MDBTableHead, MDBFormInline
+} from 'mdbreact';
+import './newcourse.css'
+import axios from 'axios'
+import ReactDOM from 'react-dom';
+import CourseError from "./course_field_error.js"
+import {Marksrules} from "./course_form_rules.js"
+
+
+class Questions extends React.Component{
+	constructor(props){
+		super(props)
+		this.state={
+			questionArr:[0],
+			answerArr:[0,1,2,3],
+			checkarr:[],
+			ansArr: [],
+			selectedOption:[],
+			multipleselectedOption:"",
+			formdata:{
+				question:""
+			},
+			short:'',
+			Marksrules:Marksrules,
+			marksvalid:false,
+			marks:"",
+			answers:[],
+			name:"",
+			quesinputValues : new Map(),
+			tfinputValues: new Map(),
+			marks : new Map(),
+			shortcheck : new Map(),
+			sinansradio : new Map(),
+			radioarr:["True", "False"],
+			checked:0,
+			ansradioArr:[],
+			mlanscheckArr:[],
+			category1arr:[],
+			category2arr:[],
+			freetext1arr:[],
+			freetext2arr:[],
+
+		}
+		this.addQues = this.addQues.bind(this)
+		this.addAns = this.addAns.bind(this)
+	}
+
+	componentWillMount = () => {
+		this.selectedCheckboxes = new Set();
+	}
+
+	addQues = () => {
+		const item = {
+			name: ""
+		}
+		this.setState({
+			questionArr: [...this.state.questionArr, item]
+		})
+	}
+
+	addAns(){
+	    /*let array = [...this.state.answerArr]
+	    array.push({ id: array.length + 1 })
+	    this.setState({ answerArr: array })*/
+	    const items = {
+			name:""
+		}
+		this.setState({
+			answerArr: [...this.state.answerArr, items]
+		})
+	}
+
+	removeQues(qidx){
+		let qArr = [...this.state.questionArr]
+		qArr.splice(qidx, 1)
+		this.setState({
+			questionArr: qArr
+		})
+	}
+
+	removeAns(aidx){
+		console.log(aidx)
+		let AnArr = [...this.state.answerArr]
+		AnArr.splice(aidx, 1)
+		this.setState({
+			answerArr: AnArr
+		})
+		console.log(this.state.answerArr)
+	}
+
+	handleTFCheckboxchange(e, idx){
+	/*	const tf = e.target.checked
+		if(tf)
+		{
+			this.state.checkarr.push(idx)
+		}
+		else if(!tf)
+		{
+			const array = [...this.state.checkarr]
+
+			const aay=array.splice(e.target.id, 1)
+    		this.setState({
+    			checkarr: aay
+    		});
+			
+		}*/
+		console.log(e.target.id)
+		const { id, checked } = e.target
+		let arr = [...this.state.checkarr]
+		arr[idx] = {...arr[idx], [id]: checked}
+		this.state.checkarr = arr
+		this.setState({ 
+			checkarr : this.state.checkarr
+		})
+		console.log(this.state.checkarr)
+	}
+
+
+	handleQuesinputchange(e, index){
+		const { name, value } = e.target;
+		const questionArr = [...this.state.questionArr];
+		questionArr[index] = {
+			[name]: value
+		};
+		this.setState({
+			questionArr
+		});
+
+		const quesmap = this.state.quesinputValues.set(index, e.target.value)
+		const quejson =  JSON.stringify([...quesmap])
+		const quesarr = JSON.parse(quejson)
+		console.log(quesarr)
+		this.props.GetQuestions(quesarr)
+	}
+
+	handleAnsinputchange(e, idx){
+		const val = e.target.value
+		const { name } = e.target;
+		const answerArr = [...this.state.answerArr];
+		answerArr[idx] = {
+			[name]: val
+		};
+		this.setState({
+			answerArr
+		});
+
+		const { id, value } = e.target
+		let arr = [...this.state.answers]
+		arr[idx] = {...arr[idx], [id]: value}
+		this.state.answers = arr
+		this.setState({ 
+			answers : this.state.answers
+		})
+		console.log(this.state.answers)
+		this.props.GetAnswers(this.state.answers)
+	}
+
+	handleOptionChange(e) {
+
+		const opmap = this.state.tfinputValues.set(e.target.id, e.target.value)
+		const opjson =  JSON.stringify([...opmap])
+		const oparr = JSON.parse(opjson)
+		console.log(oparr)
+		this.props.GetAnswers(oparr)
+	}
+
+	handlemarks(e,idx){
+		const marksmap = this.state.marks.set(idx, e.target.value)
+		const markjson =  JSON.stringify([...marksmap])
+		const markarr = JSON.parse(markjson)
+		
+		this.props.GetMarks(markarr)
+		// this.formvalid()
+	}
+
+	category1change(e,idx){
+
+		const { id, value } = e.target
+		let arr = [...this.state.category1arr]
+		arr[idx] = {...arr[idx], [id]: value}
+		this.state.category1arr = arr
+		this.setState({ 
+			category1arr : this.state.category1arr
+		})
+		this.props.GetCategory1(this.state.category1arr)
+
+	}
+
+	category2change(e, idx){
+		
+		const { id, value } = e.target
+		let arr = [...this.state.category2arr]
+		arr[idx] = {...arr[idx], [id]: value}
+		this.state.category2arr = arr
+		this.setState({ 
+			category2arr : this.state.category2arr
+		})
+		this.props.GetCategory2(this.state.category2arr)
+	}
+
+	freetext1change(e, idx){
+		
+		const { id, value } = e.target
+		let arr = [...this.state.freetext1arr]
+		arr[idx] = {...arr[idx], [id]: value}
+		this.state.freetext1arr = arr
+		this.setState({ 
+			freetext1arr : this.state.freetext1arr
+		})
+		this.props.GetFreetext1(this.state.freetext1arr)
+	}
+
+	freetext2change(e, idx){
+		
+		const { id, value } = e.target
+		let arr = [...this.state.freetext2arr]
+		arr[idx] = {...arr[idx], [id]: value}
+		this.state.freetext2arr = arr
+		this.setState({ 
+			freetext2arr : this.state.freetext2arr
+		})
+		this.props.GetFreetext2(this.state.freetext2arr)
+	}
+
+	quescheckchange(e, idx){
+		if (this.selectedCheckboxes.has(e.target.value)) {
+			this.selectedCheckboxes.delete(e.target.value);
+		} else {
+			this.selectedCheckboxes.add(e.target.value);
+		}
+		console.log(this.selectedCheckboxes)
+		// const options = this.state.options
+		// let index
+
+		// // check if the check box is checked or unchecked
+		// if (e.target.checked) {
+		// // add the numerical value of the checkbox to options array
+		// 	options.push(+e.target.value)
+		// } else {
+		// // or remove the value from the unchecked checkbox from the array
+		// 	index = options.indexOf(+e.target.value)
+		// 	options.splice(index, 1)
+		// }
+
+		// // update the state with the new array of options
+		// this.setState({ options: options })
+		// console.log(options)
+		// // const checkboxmap = this.state.shortcheck.set(idx, e.target.checked)
+		// // const checkboxjson =  JSON.stringify([...checkboxmap])
+		// // const checkboxarr = JSON.parse(checkboxjson)
+		// // console.log(checkboxarr)
+
+		// // this.props.GetQuescheck(checkboxarr)
+	}
+
+	handleCategory(e){
+		e.preventDefault()
+		const node = ReactDOM.findDOMNode(this);
+
+		if(e.target.className=='addcategory')
+		{
+			node.querySelector('#Quescategory'+e.target.id).style = "display: block"
+		}
+		else
+		{
+			node.querySelector('#Quescategory'+e.target.id).style = "display: none"
+		}
+	}
+
+	ansradiochange = (e, idx) =>{
+
+		const { id, checked } = e.target
+		let arr = [...this.state.ansradioArr]
+		arr[idx] = []
+		arr[idx] = {...arr[idx], [id]: checked}
+		this.state.ansradioArr = arr
+		this.setState({ 
+			ansradioArr : this.state.ansradioArr
+		})
+		console.log(this.state.ansradioArr)
+		
+		this.props.GetMulAnscheck(this.state.ansradioArr)
+	}
+
+	handleQuesCheckboxchange(e){
+		console.log(e.target.id)
+	}
+
+	handleMLAnsCheckboxchange(e, idx){
+		const { id, checked } = e.target
+		let arr = [...this.state.mlanscheckArr]
+		arr[idx] = {...arr[idx], [id]: checked}
+		this.state.mlanscheckArr = arr
+		this.setState({ 
+			mlanscheckArr : this.state.mlanscheckArr
+		})
+		console.log(this.state.mlanscheckArr)
+		this.props.GetMulAnscheck(this.state.mlanscheckArr)
+	}
+
+	formvalid(){
+		const formRules=this.state.Marksrules
+
+		if(this.state.marks.length >0)
+		{
+			formRules[0].valid = true
+		}
+		else
+		{
+			formRules[0].valid = false
+		}
+	}
+
+	render(){
+		let formRules=this.state.Marksrules
+		return(
+			<div>
+				{this.props.QuetionType == 1 &&
+					this.state.questionArr.map((input,qidx)=>{
+						const tid = "t"+qidx
+						const fid = "f"+qidx
+						const c1idx = "c1"+qidx
+						const c1ididx = "c1id"+qidx
+						const c2idx = "c2"+qidx
+						const c2ididx = "c2id"+qidx
+						const f1idx = "f1"+qidx
+						const f1ididx = "f1id"+qidx
+						const f2idx = "f2"+qidx
+						const f2ididx = "f2id"+qidx
+						const inputid = "inp"+qidx
+			 			return (
+							<div key={qidx}>
+								<span class="labeltext">Question {qidx+1}</span>
+					     		<MDBRow>
+					     			<MDBCol md="12">
+							     		<MDBRow>
+											<MDBCol col md="1" className="questioncheckbox" >
+												<MDBInput type="checkbox" id={qidx} label = " " onChange={(e)=>this.handleTFCheckboxchange(e,qidx)}/>
+											</MDBCol>
+											<MDBCol md="11">
+												<MDBInput type="textarea" label="Type Your Question" name="question" outline value={this.state.questionArr[qidx].question} onChange={(e)=>this.handleQuesinputchange(e,qidx)} />
+											</MDBCol>
+										</MDBRow>
+										<MDBRow>
+											<MDBCol md="12" className="truefalseradio">
+												<MDBInput gap label="True" type="radio" name = {qidx} id={tid} value="True" onClick ={(e)=>this.handleOptionChange(e)}/>
+												 <MDBInput gap label="False" type="radio" name ={qidx} id={fid} value="False" onClick ={(e)=>this.handleOptionChange(e)}/>
+											</MDBCol>
+										</MDBRow>
+										<div >
+											<a href="#" class="text-decoration-none" id={qidx} onClick={(e)=>this.handleCategory(e)} class="addcategory">Add Category </a>
+										</div>
+										<br />
+
+										<MDBRow>
+											<MDBCol md="6" className="categoryalign">
+												<div style={{display:"none"}} id={"Quescategory"+qidx}>
+													<span class="labeltext">Category 1</span>
+													<MDBInput type="text" label="Category Name" outline  name={c1idx} id={c1ididx} onChange = {(e)=>this.category1change(e, qidx)} />
+
+													<span class="labeltext">Category 2</span>
+													<MDBInput type="text" label="Category Name" outline name={c2idx} id={c2ididx}  onChange = {(e)=>this.category2change(e,qidx)}/>
+
+													<span class="labeltext">Free Text 1</span>
+													<MDBInput type="text" label="Free Text" outline name={f1idx} id={f1ididx} onChange = {(e)=>this.freetext1change(e,qidx)}/>
+
+													<span class="labeltext">Free Text 2</span>
+													<MDBInput type="text" label="Free Text" outline name={f2idx} id={f2ididx} onChange = {(e)=>this.freetext2change(e,qidx)}/>
+
+													<a href="#" style={{float:"left"}} class="text-decoration-none" onClick={(e)=>this.handleCategory(e)} id={qidx} className="removecategory">Remove Category </a>
+													<br />
+												</div>
+											</MDBCol>
+										</MDBRow>
+
+										<MDBRow>
+											<MDBCol md="6" className="marksalign">
+												<h6 class="labeltext">Marks *</h6>
+												<MDBInput type="text" label="Type Your Marks" outline name="marks" onChange={(e)=>this.handlemarks(e,qidx)}/>
+											</MDBCol>
+										</MDBRow>
+										<MDBBtn color="primary" size="md" rounded type="submit" onClick={this.removeQues.bind(this, qidx)}>Remove Question</MDBBtn>
+									</MDBCol>
+								</MDBRow>
+								
+							</div>
+						)
+					})
+				}
+
+				{this.props.QuetionType == 2 &&
+					this.state.questionArr.map((input,qidx)=>{
+						const c1idx = "c1"+qidx
+						const c1ididx = "c1id"+qidx
+						const c2idx = "c2"+qidx
+						const c2ididx = "c2id"+qidx
+						const f1idx = "f1"+qidx
+						const f1ididx = "f1id"+qidx
+						const f2idx = "f2"+qidx
+						const f2ididx = "f2id"+qidx
+						return (
+							<div key={qidx}>
+								<span class="labeltext">Question {qidx+1}</span>
+								<MDBRow>
+					     			<MDBCol md="12">
+										<MDBRow>
+											<MDBCol col md="1" className="questioncheckbox">
+												 <MDBInput type="checkbox" id={qidx} label=" " onChange = {this.handleQuesCheckboxchange}/>
+											</MDBCol>
+											<MDBCol md="11">
+												<MDBInput type="textarea" label="Type Your Question" outline name="question" value={this.state.questionArr[qidx].question} onChange={(e)=>this.handleQuesinputchange(e,qidx)} />
+											</MDBCol>
+										</MDBRow>
+
+										{this.state.answerArr.map((input1,index2) => {
+											const n = "ca"+qidx+""+index2
+											const aidx = "a"+qidx+""+index2
+											const qi = qidx
+											const aqi = qidx
+											
+											return (
+												<div key={index2}>
+													<MDBRow>
+														<MDBCol col md="1" className="answercheckbox">
+															<MDBInput type="checkbox" id={n} label=" " name={qi} onClick = {(e)=>this.handleMLAnsCheckboxchange(e, qidx)}/>
+														</MDBCol>
+														<MDBCol md="10">
+															<MDBInput type="text" label="provide your answers here" outline id={aidx} name="answer" onChange ={(e)=>this.handleAnsinputchange(e,qidx)}/>
+														</MDBCol>
+														<MDBCol md="1">
+															<MDBIcon icon="times" className="iconAlign" id={aidx} onClick={this.removeAns.bind(this, aidx)} />
+														</MDBCol>
+													</MDBRow>
+												</div>
+											)
+										})
+										}
+
+										<MDBIcon type="submit" icon="plus" onClick={this.addAns} className="addAnsicon" /> 
+
+										<div >
+											<a href="#" class="text-decoration-none" id={qidx} onClick={(e)=>this.handleCategory(e)} class="addcategory">Add Category </a>
+										</div>
+										<br />
+
+										<MDBRow>
+											<MDBCol md="6" className="categoryalign">
+												<div style={{display:"none"}} id={"Quescategory"+qidx}>
+													<span class="labeltext">Category 1</span>
+													<MDBInput type="text" label="Category Name" outline  name={c1idx} id={c1ididx} onChange = {(e)=>this.category1change(e, qidx)} />
+
+													<span class="labeltext">Category 2</span>
+													<MDBInput type="text" label="Category Name" outline name={c2idx} id={c2ididx}  onChange = {(e)=>this.category2change(e,qidx)}/>
+
+													<span class="labeltext">Free Text 1</span>
+													<MDBInput type="text" label="Free Text" outline name={f1idx} id={f1ididx} onChange = {(e)=>this.freetext1change(e,qidx)}/>
+
+													<span class="labeltext">Free Text 2</span>
+													<MDBInput type="text" label="Free Text" outline name={f2idx} id={f2ididx} onChange = {(e)=>this.freetext2change(e,qidx)}/>
+
+													<a href="#" style={{float:"left"}} class="text-decoration-none" onClick={(e)=>this.handleCategory(e)} id={qidx} className="removecategory">Remove Category </a>
+													<br />
+												</div>
+											</MDBCol>
+										</MDBRow>
+										<MDBRow>
+											<MDBCol md="6" className="marksalign">
+												<br />
+												<h6 class="labeltext">Marks *</h6>
+												<MDBInput type="text" label="Type Your Marks" outline name="marks" onChange={(e)=>this.handlemarks(e,qidx)}/>
+											</MDBCol>
+										</MDBRow>
+										<MDBBtn color="primary" size="md" rounded type="submit" onClick={this.removeQues.bind(this, qidx)}>Remove Question</MDBBtn>
+									</MDBCol>
+								</MDBRow>
+							</div>
+						)
+					})
+				}
+
+				{this.props.QuetionType == 3 &&
+					this.state.questionArr.map((input,qidx)=>{
+						const c1idx = "c1"+qidx
+						const c1ididx = "c1id"+qidx
+						const c2idx = "c2"+qidx
+						const c2ididx = "c2id"+qidx
+						const f1idx = "f1"+qidx
+						const f1ididx = "f1id"+qidx
+						const f2idx = "f2"+qidx
+						const f2ididx = "f2id"+qidx
+			 			return (
+							<div key={qidx}>
+								<span class="labeltext">Question {qidx+1}</span>
+								<MDBRow>
+				     				<MDBCol md="12">
+										<MDBRow>
+											<MDBCol col md="1" className="questioncheckbox">
+												<MDBInput id={qidx} className="iconAlign" type="checkbox" label=" " onChange = {this.handleQuesCheckboxchange} />
+											</MDBCol>
+											<MDBCol md="11">
+												<MDBInput type="textarea" label="Type Your Question" name="question" value={this.state.questionArr[qidx].question} outline onChange={(e)=>this.handleQuesinputchange(e,qidx)} />
+											</MDBCol>
+										</MDBRow>
+
+										{this.state.answerArr.map((input,index2) => {
+											const n = "ra"+qidx+""+index2
+											const qi = qidx
+											const aqi = qidx
+											const aidx = "a"+qidx+""+index2
+											return (
+												<div key={n}>
+													<MDBRow>
+														<MDBCol col md="1" className="answercheckbox">
+															<MDBInput type="radio" gap label=" " name={qi} id={n} onChange = {(e)=>this.ansradiochange(e, qidx)}/>
+														</MDBCol>
+														<MDBCol md="10">
+															<MDBInput type="text" label="provide your answers here" outline name={aqi} id={aidx} value={input.name} onChange ={(e)=>this.handleAnsinputchange(e, qidx)}/>
+														</MDBCol>
+														<MDBCol md="1">
+															<MDBIcon icon="times" onClick={this.removeAns.bind(this, index2)} className="iconAlign" id={n}/>
+														</MDBCol>
+													</MDBRow>
+												</div>
+											)
+										})
+										}
+										<MDBIcon type="submit" icon="plus" onClick={this.addAns} className="addAnsicon" /> 
+
+										<div >
+											<a href="#" class="text-decoration-none" id={qidx} onClick={(e)=>this.handleCategory(e)} class="addcategory">Add Category </a>
+										</div>
+										<br />
+									
+										<MDBRow>
+											<MDBCol md="6" className="categoryalign">
+												<div style={{display:"none"}} id={"Quescategory"+qidx}>
+													<span class="labeltext">Category 1</span>
+													<MDBInput type="text" label="Category Name" outline  name={c1idx} id={c1ididx} onChange = {(e)=>this.category1change(e, qidx)} />
+
+													<span class="labeltext">Category 2</span>
+													<MDBInput type="text" label="Category Name" outline name={c2idx} id={c2ididx}  onChange = {(e)=>this.category2change(e,qidx)}/>
+
+													<span class="labeltext">Free Text 1</span>
+													<MDBInput type="text" label="Free Text" outline name={f1idx} id={f1ididx} onChange = {(e)=>this.freetext1change(e,qidx)}/>
+
+													<span class="labeltext">Free Text 2</span>
+													<MDBInput type="text" label="Free Text" outline name={f2idx} id={f2ididx} onChange = {(e)=>this.freetext2change(e,qidx)}/>
+
+													<a href="#" style={{float:"left"}} class="text-decoration-none" onClick={(e)=>this.handleCategory(e)} id={qidx} className="removecategory">Remove Category </a>
+													<br />
+												</div>
+											</MDBCol>
+										</MDBRow>
+										<MDBRow>
+											<MDBCol md="6" className="marksalign">
+												<br />
+												<h6 class="labeltext">Marks *</h6>
+												<MDBInput type="text" label="Type Your Marks" outline name="marks" onChange={(e)=>this.handlemarks(e,qidx)}/>
+											</MDBCol>
+										</MDBRow>
+										<MDBBtn color="primary" size="md" rounded type="submit" onClick={this.removeQues.bind(this, qidx)}>Remove Question</MDBBtn>
+									</MDBCol>
+								</MDBRow>
+							</div>
+						)
+					})
+				}
+
+				{this.props.QuetionType == 4 &&
+					this.state.questionArr.map((input,qidx)=>{
+						const sidx = qidx+""+qidx
+						const aidx = "s"+qidx+""+qidx
+						const c1idx = "c1"+qidx
+						const c1ididx = "c1id"+qidx
+						const c2idx = "c2"+qidx
+						const c2ididx = "c2id"+qidx
+						const f1idx = "f1"+qidx
+						const f1ididx = "f1id"+qidx
+						const f2idx = "f2"+qidx
+						const f2ididx = "f2id"+qidx
+			 			return (
+							<div key={qidx}>
+								<span class="labeltext">Question {qidx+1}</span>
+								<MDBRow>
+									<MDBCol md="12">
+										<MDBRow>
+											<MDBCol md="1" className="questioncheckbox">
+												<MDBInput type="checkbox" id={qidx} label=" " name="question" onChange = {(e)=>this.quescheckchange(e,qidx)}/>
+											</MDBCol>
+											<MDBCol md="11">
+												<MDBInput type="textarea" label="Type Your Question" name="question" value={this.state.questionArr[qidx].question} outline onChange={(e)=>this.handleQuesinputchange(e,qidx)} />
+											</MDBCol>
+										</MDBRow>
+
+										<MDBRow>
+											<MDBCol col md="1" >
+											</MDBCol>
+											<MDBCol md="11">
+												<MDBInput type="textarea" label="Provide your answers here" outline name={aidx} id={sidx} onChange={(e)=>this.handleAnsinputchange(e, qidx)} />
+											</MDBCol>
+										</MDBRow>
+
+										<div >
+											<a href="#" class="text-decoration-none" id={qidx} onClick={(e)=>this.handleCategory(e)} class="addcategory">Add Category </a>
+										</div>
+										<br />
+
+										<MDBRow>
+											<MDBCol md="6" className="categoryalign">
+												<div style={{display:"none"}} id={"Quescategory"+qidx}>
+													<span class="labeltext">Category 1</span>
+													<MDBInput type="text" label="Category Name" outline name={c1idx} id={c1ididx} onChange = {(e)=>this.category1change(e, qidx)} />
+
+													<span class="labeltext">Category 2</span>
+													<MDBInput type="text" label="Category Name" outline name={c2idx} id={c2ididx}  onChange = {(e)=>this.category2change(e,qidx)}/>
+
+													<span class="labeltext">Free Text 1</span>
+													<MDBInput type="text" label="Free Text" outline name={f1idx} id={f1ididx} onChange = {(e)=>this.freetext1change(e,qidx)}/>
+
+													<span class="labeltext">Free Text 2</span>
+													<MDBInput type="text" label="Free Text" outline name={f2idx} id={f2ididx} onChange = {(e)=>this.freetext2change(e,qidx)}/>
+
+													<a href="#" style={{float:"left"}} class="text-decoration-none" id={qidx} className="removecategory" onClick={(e)=>this.handleCategory(e)}>Remove Category </a>
+													<br />
+												</div>
+											</MDBCol>
+										</MDBRow>
+										<MDBRow>
+											<MDBCol md="6" className="marksalign">
+												<br />
+												<h6 class="labeltext">Marks *</h6>
+												<MDBInput type="text" label="Type Your Marks" outline name="marks" onChange={(e)=>this.handlemarks(e,qidx)}/>
+												
+												<CourseError
+													formRulesObject={formRules[0]}
+												/>
+
+											</MDBCol>
+										</MDBRow>
+										
+										<MDBBtn color="primary" size="md" rounded type="submit" id={qidx} onClick={this.removeQues.bind(this, qidx)} >Remove Question</MDBBtn>
+									</MDBCol>
+								</MDBRow>
+							</div>
+						)
+					})
+				}
+			
+				<MDBBtn color="primary" size="md" rounded type="submit" onClick={this.addQues}> Add new Question </MDBBtn>
+				{/*<MDBBtn color="primary" size="md" rounded type="submit" onClick={this.removeQ}>Remove Question</MDBBtn>*/}
+			</div>
+		)
+		
+	}
+
+}
+export default Questions 

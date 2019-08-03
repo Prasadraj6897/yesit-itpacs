@@ -1,0 +1,140 @@
+import React from 'react'
+import {Link, Redirect} from 'react-router-dom'
+import { 
+  MDBRow,
+  MDBCol,
+  MDBCard,
+  MDBView,
+  MDBCardBody,
+  MDBInput,
+  MDBContainer,
+  MDBAvatar,
+  MDBBtn,
+  MDBFileInput,
+  MDBModal,
+  SideNavLink,
+  MDBStepper, MDBStep, MDBSelect, MDBIcon, MDBDatePicker, MDBChipsInput,MDBSelectInput, MDBSelectOptions, MDBSelectOption
+} from 'mdbreact';
+import Modules from './Modules.js'
+import Handouts from './Handouts.js'
+import Assignments from './Assignments.js'
+import Videos from'./videos.js'
+import Session from './sessions.js'
+class CreateCourse extends React.Component{
+
+	constructor(props){
+		super(props)
+		this.state={
+			courseId:props.match.params.courseid,
+			redirect: false,
+			page: "/createcourse/stepone",
+			module_lists:[]
+		}
+		this.getModuleLists = this.getModuleLists.bind(this)
+	}
+
+	navigatepageredirect(event, p){
+		this.setState({
+			redirect: true
+		})
+
+		if(event == "page1"){
+			this.setState({
+				page: "/createcourse/stepone"
+			})
+		}else if(event == "page2"){
+			this.setState({
+				page: "/createcourse/steptwo"
+			})
+		}else if(event == "page3"){
+			this.setState({
+				page: "/createcourse/stepthree"
+			})
+		}
+	}
+
+	navigatepage(){
+		if (this.state.redirect){
+			return <Redirect to={this.state.page} />
+		}
+	}
+
+	componentDidMount(){
+		// alert(this.state.courseId)
+	}
+
+	/* Get module lists from Module.js */
+	getModuleLists(listItems){
+		this.setState({
+			module_lists: listItems
+		})
+	}
+
+	render(){
+		return(
+			<MDBContainer>
+				<MDBStepper form>
+	                <MDBStep form>
+	                		{this.navigatepage()}
+                    		<MDBBtn color="indigo" circle onClick={this.navigatepageredirect.bind(this,"page1")} >
+                      		1
+                    		</MDBBtn>
+	                  	<p>Course</p>
+	                </MDBStep>
+	                <MDBStep form>
+	                    	<MDBBtn color="indigo" circle onClick={this.navigatepageredirect.bind(this,"page2")} >
+	                      	2
+	                    	</MDBBtn>
+	                  	<p>Resources</p>
+	                </MDBStep>
+	                <MDBStep form>
+	                    	<MDBBtn color="default" circle onClick={this.navigatepageredirect.bind(this,"page3")} >
+	                      	3
+	                    	</MDBBtn>
+	                  	<p>Payment</p>
+	                </MDBStep>
+				</MDBStepper>
+				
+
+				<MDBCard narrow >
+					<MDBView cascade className="mdb-color lighten-3 card-header">
+	                	<h5 className="mb-0 font-weight-bold text-center text-white">Resources</h5>
+	              	</MDBView>
+	              	<MDBContainer fluid>
+	              		<br />
+						<Modules 
+							courseid={this.state.courseId}
+							getModuleLists={this.getModuleLists}
+						/>
+						<br />
+						<Handouts 
+							ModuleLists = {this.state.module_lists}
+						/>
+						<br />
+						<Assignments />
+						<br />
+						<Videos />
+						<br />
+						<Session />
+						<br />
+						{/*Button Section for bottom*/}
+						<MDBRow>
+							<MDBCol lg="12" className="mb-r">
+								<MDBBtn color="default" onClick={this.navigatepageredirect.bind(this,"page1")} >
+								Previous
+								</MDBBtn>
+								<MDBBtn color="primary" onClick={this.navigatepageredirect.bind(this,"page3")} >
+								Next
+								</MDBBtn>
+							</MDBCol>
+						</MDBRow>
+					</MDBContainer>
+				</MDBCard>
+
+			</MDBContainer>
+		)
+	}
+
+}
+
+export default CreateCourse;

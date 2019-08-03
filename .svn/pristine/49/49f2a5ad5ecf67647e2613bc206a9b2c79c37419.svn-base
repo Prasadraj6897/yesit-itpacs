@@ -1,0 +1,1076 @@
+#!/usr/bin/env python3
+
+from flask.cli import FlaskGroup
+
+
+from project.app import create_app, db
+from project.api.models import COURSE, CourseLevel_M, CourseLevelGroup_M, CourseIsFor_M, CourseFallStream_M, Handout_M, Assignment_M, Assignment_Testtype_M
+
+app = create_app()
+cli = FlaskGroup(create_app=create_app)
+
+@cli.command()
+def recreatedb():
+
+	db.drop_all()
+	db.create_all()
+	db.session.commit()
+
+@cli.command()
+def seeddb():
+
+	db.session.add(COURSE(firstname='Tina', lastname='Prislan', email='tina.prislan@gmail.com', password='rakesh22'))
+	db.session.add(COURSE(firstname='Ashwini', lastname='Rao', email='ashwini.rao@ikompass.com', password='rakesh22'))
+	db.session.add(COURSE(firstname='Deepak', lastname='G.S', email='aditya@ikompass.com', password='rakesh22'))
+	db.session.add(COURSE(firstname='Prasad', lastname='RRR', email='prasad@sugiinfotech.com', password='12345678'))
+	db.session.commit()
+
+@cli.command()
+def seedcoursemasters():
+
+	courselevel_lists = [
+		{
+			"CourseLevelId" : 1,
+			"CourseLevelName" : "School",
+			"CourseLevelStatus" : 1
+		},
+		{
+			"CourseLevelId": 2 ,
+			"CourseLevelName" : "11th-12th/ Junior College/ Diploma",
+			"CourseLevelStatus": 1
+		},
+		{
+			"CourseLevelId" : 3,
+			"CourseLevelName" : "University",
+			"CourseLevelStatus" : 1
+		},
+		{
+			"CourseLevelId" : 4,
+			"CourseLevelName" : "Professional",
+			"CourseLevelStatus" : 1
+		},
+		{
+			"CourseLevelId" : 5,
+			"CourseLevelName":"Others",
+			"CourseLevelStatus":1
+		}
+	]
+
+	for each in courselevel_lists:
+		courselevel = CourseLevel_M(
+						CourseLevelId = each['CourseLevelId'],
+						CourseLevelName = each['CourseLevelName'],
+						CourseLevelStatus = each['CourseLevelStatus']
+					)
+		courselevel.save()
+
+	courselevelgroup_lists = [
+		{
+			"CourseLevelGroupId" : 1,
+			"CourseLevelId" : 1,
+			"CourseLevelGroupName" : "Grade 1,Grade 2,Grade 3,...",
+			"CourseLevelGroupStatus" : 1
+		},
+		{
+			"CourseLevelGroupId" : 2,
+			"CourseLevelId" : 1,
+			"CourseLevelGroupName" : "Standard 1,Standard 2,...",
+			"CourseLevelGroupStatus" : 1
+		},
+		{
+			"CourseLevelGroupId" : 3,
+			"CourseLevelId" : 1,
+			"CourseLevelGroupName" : "Form 1,Form 2,Form 3,...",
+			"CourseLevelGroupStatus" : 1
+		},
+		{
+			"CourseLevelGroupId" : 4,
+			"CourseLevelId" : 1,
+			"CourseLevelGroupName" : "Class 1,Class 2,Class 3,...",
+			"CourseLevelGroupStatus" : 1
+		},
+		{
+			"CourseLevelGroupId" : 5,
+			"CourseLevelId" : 1,
+			"CourseLevelGroupName" : "Batch 1,Batch 2,Batch 3,...",
+			"CourseLevelGroupStatus" : 1
+		},
+		{
+			"CourseLevelGroupId" : 6,
+			"CourseLevelId" : 1,
+			"CourseLevelGroupName" : "Year 1,Year 2,Year 3,...",
+			"CourseLevelGroupStatus" : 1
+		},
+		{
+			"CourseLevelGroupId" : 7,
+			"CourseLevelId" : 2,
+			"CourseLevelGroupName" : "Grade 11,Grade 12",
+			"CourseLevelGroupStatus" : 1
+		},
+		{
+			"CourseLevelGroupId" : 8,
+			"CourseLevelId" : 2,
+			"CourseLevelGroupName" : "Standard 11,Standard 12",
+			"CourseLevelGroupStatus" : 1
+		},
+		{
+			"CourseLevelGroupId" : 9,
+			"CourseLevelId" : 2,
+			"CourseLevelGroupName" : "Form 11,Form 12",
+			"CourseLevelGroupStatus" : 1
+		},
+		{
+			"CourseLevelGroupId" : 10,
+			"CourseLevelId" : 2,
+			"CourseLevelGroupName" : "Class 11,Class 12",
+			"CourseLevelGroupStatus" : 1
+		},
+		{
+			"CourseLevelGroupId" : 11,
+			"CourseLevelId" : 2,
+			"CourseLevelGroupName" : "Batch 11,Batch 12",
+			"CourseLevelGroupStatus" : 1
+		},
+		{
+			"CourseLevelGroupId" : 12,
+			"CourseLevelId" : 2,
+			"CourseLevelGroupName" : "Year 11,Year 12",
+			"CourseLevelGroupStatus" : 1
+		},
+		{
+			"CourseLevelGroupId" : 13,
+			"CourseLevelId" : 2,
+			"CourseLevelGroupName" : "Junior College Year 1,Junior College Year 2,Junior College Year 3",
+			"CourseLevelGroupStatus" : 1
+		},
+		{
+			"CourseLevelGroupId" : 14,
+			"CourseLevelId" : 2,
+			"CourseLevelGroupName" : "Diploma Year 1,Diploma Year 2,Diploma Year 3",
+			"CourseLevelGroupStatus" : 1
+		},
+		{
+			"CourseLevelGroupId" : 15,
+			"CourseLevelId" : 2,
+			"CourseLevelGroupName" : "Pre University(PU) 1st Year,Pre University(PU) 2nd Year",
+			"CourseLevelGroupStatus" : 1
+		},
+		{
+			"CourseLevelGroupId" : 16,
+			"CourseLevelId" : 2,
+			"CourseLevelGroupName" : "A1 Level,A2 Level,A3 Level",
+			"CourseLevelGroupStatus" : 1
+		},
+		{
+			"CourseLevelGroupId" : 17,
+			"CourseLevelId" : 3,
+			"CourseLevelGroupName" : "University",
+			"CourseLevelGroupStatus" : 1
+		}
+	]
+
+	for group in courselevelgroup_lists:
+		courselevelgroup = CourseLevelGroup_M(
+						CourseLevelGroupId = group['CourseLevelGroupId'],
+						CourseLevelId = group['CourseLevelId'],
+						CourseLevelGroupName = group['CourseLevelGroupName'],
+						CourseLevelGroupStatus = group['CourseLevelGroupStatus']
+					)
+		courselevelgroup.save()
+
+	courseisfor_lists = [
+		{
+			"CourseIsForId" : 1,
+			"CourseLevelGroupId" : 1,
+			"GroupLevelStreamName" : "Grade 1",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 2,
+			"CourseLevelGroupId" : 1,
+			"GroupLevelStreamName" : "Grade 2",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 3,
+			"CourseLevelGroupId" : 1,
+			"GroupLevelStreamName" : "Grade 3",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 4,
+			"CourseLevelGroupId" : 1,
+			"GroupLevelStreamName" : "Grade 4",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 5,
+			"CourseLevelGroupId" : 1,
+			"GroupLevelStreamName" : "Grade 5",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 6,
+			"CourseLevelGroupId" : 1,
+			"GroupLevelStreamName" : "Grade 6",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 7,
+			"CourseLevelGroupId" : 1,
+			"GroupLevelStreamName" : "Grade 7",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 8,
+			"CourseLevelGroupId" : 1,
+			"GroupLevelStreamName" : "Grade 8",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 9,
+			"CourseLevelGroupId" : 1,
+			"GroupLevelStreamName" : "Grade 9",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 10,
+			"CourseLevelGroupId" : 1,
+			"GroupLevelStreamName" : "Grade 10",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 11,
+			"CourseLevelGroupId" : 2,
+			"GroupLevelStreamName" : "Standard 1",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 12,
+			"CourseLevelGroupId" : 2,
+			"GroupLevelStreamName" : "Standard 2",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 13,
+			"CourseLevelGroupId" : 2,
+			"GroupLevelStreamName" : "Standard 3",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 14,
+			"CourseLevelGroupId" : 2,
+			"GroupLevelStreamName" : "Standard 4",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 15,
+			"CourseLevelGroupId" : 2,
+			"GroupLevelStreamName" : "Standard 5",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 16,
+			"CourseLevelGroupId" : 2,
+			"GroupLevelStreamName" : "Standard 6",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 17,
+			"CourseLevelGroupId" : 2,
+			"GroupLevelStreamName" : "Standard 7",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 18,
+			"CourseLevelGroupId" : 2,
+			"GroupLevelStreamName" : "Standard 8",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 19,
+			"CourseLevelGroupId" : 2,
+			"GroupLevelStreamName" : "Standard 9",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 20,
+			"CourseLevelGroupId" : 2,
+			"GroupLevelStreamName" : "Standard 10",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 21,
+			"CourseLevelGroupId" : 3,
+			"GroupLevelStreamName" : "Form 1",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 22,
+			"CourseLevelGroupId" : 3,
+			"GroupLevelStreamName" : "Form 2",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 23,
+			"CourseLevelGroupId" : 3,
+			"GroupLevelStreamName" : "Form 3",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 24,
+			"CourseLevelGroupId" : 3,
+			"GroupLevelStreamName" : "Form 4",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 25,
+			"CourseLevelGroupId" : 3,
+			"GroupLevelStreamName" : "Form 5",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 26,
+			"CourseLevelGroupId" : 3,
+			"GroupLevelStreamName" : "Form 6",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 27,
+			"CourseLevelGroupId" : 3,
+			"GroupLevelStreamName" : "Form 7",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 28,
+			"CourseLevelGroupId" : 3,
+			"GroupLevelStreamName" : "Form 8",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 29,
+			"CourseLevelGroupId" : 3,
+			"GroupLevelStreamName" : "Form 9",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 30,
+			"CourseLevelGroupId" : 3,
+			"GroupLevelStreamName" : "Form 10",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 31,
+			"CourseLevelGroupId" : 4,
+			"GroupLevelStreamName" : "Class 1",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 32,
+			"CourseLevelGroupId" : 4,
+			"GroupLevelStreamName" : "Class 2",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 33,
+			"CourseLevelGroupId" : 4,
+			"GroupLevelStreamName" : "Class 3",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 34,
+			"CourseLevelGroupId" : 4,
+			"GroupLevelStreamName" : "Class 4",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 35,
+			"CourseLevelGroupId" : 4,
+			"GroupLevelStreamName" : "Class 5",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 36,
+			"CourseLevelGroupId" : 4,
+			"GroupLevelStreamName" : "Class 6",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 37,
+			"CourseLevelGroupId" : 4,
+			"GroupLevelStreamName" : "Class 7",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 38,
+			"CourseLevelGroupId" : 4,
+			"GroupLevelStreamName" : "Class 8",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 39,
+			"CourseLevelGroupId" : 4,
+			"GroupLevelStreamName" : "Class 9",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 40,
+			"CourseLevelGroupId" : 4,
+			"GroupLevelStreamName" : "Class 10",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 41,
+			"CourseLevelGroupId" : 5,
+			"GroupLevelStreamName" : "Batch 1",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 42,
+			"CourseLevelGroupId" : 5,
+			"GroupLevelStreamName" : "Batch 2",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 43,
+			"CourseLevelGroupId" : 5,
+			"GroupLevelStreamName" : "Batch 3",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 44,
+			"CourseLevelGroupId" : 5,
+			"GroupLevelStreamName" : "Batch 4",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 45,
+			"CourseLevelGroupId" : 5,
+			"GroupLevelStreamName" : "Batch 5",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 46,
+			"CourseLevelGroupId" : 5,
+			"GroupLevelStreamName" : "Batch 6",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 47,
+			"CourseLevelGroupId" : 5,
+			"GroupLevelStreamName" : "Batch 7",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 48,
+			"CourseLevelGroupId" : 5,
+			"GroupLevelStreamName" : "Batch 8",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 49,
+			"CourseLevelGroupId" : 5,
+			"GroupLevelStreamName" : "Batch 9",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 50,
+			"CourseLevelGroupId" : 5,
+			"GroupLevelStreamName" : "Batch 10",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 51,
+			"CourseLevelGroupId" : 6,
+			"GroupLevelStreamName" : "Year 1",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 52,
+			"CourseLevelGroupId" : 6,
+			"GroupLevelStreamName" : "Year 2",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 53,
+			"CourseLevelGroupId" : 6,
+			"GroupLevelStreamName" : "Year 3",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 54,
+			"CourseLevelGroupId" : 6,
+			"GroupLevelStreamName" : "Year 4",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 55,
+			"CourseLevelGroupId" : 6,
+			"GroupLevelStreamName" : "Year 5",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 56,
+			"CourseLevelGroupId" : 6,
+			"GroupLevelStreamName" : "Year 6",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 57,
+			"CourseLevelGroupId" : 6,
+			"GroupLevelStreamName" : "Year 7",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 58,
+			"CourseLevelGroupId" : 6,
+			"GroupLevelStreamName" : "Year 8",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 59,
+			"CourseLevelGroupId" : 6,
+			"GroupLevelStreamName" : "Year 9",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 60,
+			"CourseLevelGroupId" : 6,
+			"GroupLevelStreamName" : "Year 10",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 61,
+			"CourseLevelGroupId" : 7,
+			"GroupLevelStreamName" : "Grade 11",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 62,
+			"CourseLevelGroupId" : 7,
+			"GroupLevelStreamName" : "Grade 12",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 63,
+			"CourseLevelGroupId" : 8,
+			"GroupLevelStreamName" : "Standard 11",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 64,
+			"CourseLevelGroupId" : 8,
+			"GroupLevelStreamName" : "Standard 12",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 65,
+			"CourseLevelGroupId" : 9,
+			"GroupLevelStreamName" : "Form 11",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 66,
+			"CourseLevelGroupId" : 9,
+			"GroupLevelStreamName" : "Form 12",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 67,
+			"CourseLevelGroupId" : 10,
+			"GroupLevelStreamName" : "Class 11",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 68,
+			"CourseLevelGroupId" : 10,
+			"GroupLevelStreamName" : "Class 12",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 69,
+			"CourseLevelGroupId" : 11,
+			"GroupLevelStreamName" : "Batch 11",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 70,
+			"CourseLevelGroupId" : 11,
+			"GroupLevelStreamName" : "Batch 12",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 71,
+			"CourseLevelGroupId" : 12,
+			"GroupLevelStreamName" : "Year 11",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 72,
+			"CourseLevelGroupId" : 12,
+			"GroupLevelStreamName" : "Year 12",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 73,
+			"CourseLevelGroupId" : 13,
+			"GroupLevelStreamName" : "Junior College year 1",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 74,
+			"CourseLevelGroupId" : 13,
+			"GroupLevelStreamName" : "Junior College year 2",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 75,
+			"CourseLevelGroupId" : 13,
+			"GroupLevelStreamName" : "Junior College year 3",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 76,
+			"CourseLevelGroupId" : 14,
+			"GroupLevelStreamName" : "Diploma year 1",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 77,
+			"CourseLevelGroupId" : 14,
+			"GroupLevelStreamName" : "Diploma year 2",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 78,
+			"CourseLevelGroupId" : 14,
+			"GroupLevelStreamName" : "Diploma year 3",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 79,
+			"CourseLevelGroupId" : 15,
+			"GroupLevelStreamName" : "Pre-University Year 1",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 80,
+			"CourseLevelGroupId" : 15,
+			"GroupLevelStreamName" : "Pre-University Year 2",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 81,
+			"CourseLevelGroupId" : 15,
+			"GroupLevelStreamName" : "Pre-University Year 3",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 82,
+			"CourseLevelGroupId" : 16,
+			"GroupLevelStreamName" : "A1 Level",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 83,
+			"CourseLevelGroupId" : 16,
+			"GroupLevelStreamName" : "A2 Level",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 84,
+			"CourseLevelGroupId" : 16,
+			"GroupLevelStreamName" : "A3 Level",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 85,
+			"CourseLevelGroupId" : 17,
+			"GroupLevelStreamName" : "Associate Degree Year 1",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 86,
+			"CourseLevelGroupId" : 17,
+			"GroupLevelStreamName" : "Associate Degree Year 2",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 87,
+			"CourseLevelGroupId" : 17,
+			"GroupLevelStreamName" : "Associate Degree Year 3",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 88,
+			"CourseLevelGroupId" : 17,
+			"GroupLevelStreamName" : "Bachelor Degree Year 1",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 89,
+			"CourseLevelGroupId" : 17,
+			"GroupLevelStreamName" : "Bachelor Degree Year 2",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 90,
+			"CourseLevelGroupId" : 17,
+			"GroupLevelStreamName" : "Bachelor Degree Year 3",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 91,
+			"CourseLevelGroupId" : 17,
+			"GroupLevelStreamName" : "Bachelor Degree Year 4",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 92,
+			"CourseLevelGroupId" : 17,
+			"GroupLevelStreamName" : "Bachelor Degree Year 5",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 93,
+			"CourseLevelGroupId" : 17,
+			"GroupLevelStreamName" : "Masters Degree Year 1",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 94,
+			"CourseLevelGroupId" : 17,
+			"GroupLevelStreamName" : "Masters Degree Year 2",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 95,
+			"CourseLevelGroupId" : 17,
+			"GroupLevelStreamName" : "Masters Degree Year 3",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 96,
+			"CourseLevelGroupId" : 17,
+			"GroupLevelStreamName" : "Post Graduate Year 1",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 97,
+			"CourseLevelGroupId" : 17,
+			"GroupLevelStreamName" : "Post Graduate Year 2",
+			"GroupLevelStreamStatus" : 1
+		},
+		{
+			"CourseIsForId" : 98,
+			"CourseLevelGroupId" : 17,
+			"GroupLevelStreamName" : "Phd",
+			"GroupLevelStreamStatus" : 1
+		}
+
+	]
+
+	for group_stream in courseisfor_lists:
+		courseisfor = CourseIsFor_M(
+						CourseIsForId = group_stream['CourseIsForId'],
+						CourseLevelGroupId = group_stream['CourseLevelGroupId'],
+						GroupLevelStreamName = group_stream['GroupLevelStreamName'],
+						GroupLevelStreamStatus = group_stream['GroupLevelStreamStatus']
+					)
+		courseisfor.save()
+
+
+	coursefallstream_lists = [
+		{
+			"CourseFallStreamId" : 1,
+			"CourseLevelId" : 0,
+			"CourseLevelStreamName" : "Arts",
+			"CourseLevelStreamStatus" : 1
+		},
+		{
+			"CourseFallStreamId" : 2,
+			"CourseLevelId" : 0,
+			"CourseLevelStreamName" : "Science",
+			"CourseLevelStreamStatus" : 1
+		},
+		{
+			"CourseFallStreamId" : 3,
+			"CourseLevelId" : 0,
+			"CourseLevelStreamName" : "Business",
+			"CourseLevelStreamStatus" : 1
+		},
+		{
+			"CourseFallStreamId" : 4,
+			"CourseLevelId" : 0,
+			"CourseLevelStreamName" : "Engineering",
+			"CourseLevelStreamStatus" : 1
+		},
+		{
+			"CourseFallStreamId" : 5,
+			"CourseLevelId" : 0,
+			"CourseLevelStreamName" : "Law",
+			"CourseLevelStreamStatus" : 1
+		},
+		{
+			"CourseFallStreamId" : 6,
+			"CourseLevelId" : 0,
+			"CourseLevelStreamName" : "Architecture",
+			"CourseLevelStreamStatus" : 1
+		},
+		{
+			"CourseFallStreamId" : 7,
+			"CourseLevelId" : 0,
+			"CourseLevelStreamName" : "Commerce",
+			"CourseLevelStreamStatus" : 1
+		},
+		{
+			"CourseFallStreamId" : 8,
+			"CourseLevelId" : 0,
+			"CourseLevelStreamName" : "Medicine",
+			"CourseLevelStreamStatus" : 1
+		},
+		{
+			"CourseFallStreamId" : 9,
+			"CourseLevelId" : 0,
+			"CourseLevelStreamName" : "Others",
+			"CourseLevelStreamStatus" : 1
+		},
+		{
+			"CourseFallStreamId" : 10,
+			"CourseLevelId" : 1,
+			"CourseLevelStreamName" : "Arts",
+			"CourseLevelStreamStatus" : 1
+		},
+		{
+			"CourseFallStreamId" : 11,
+			"CourseLevelId" : 1,
+			"CourseLevelStreamName" : "Classics",
+			"CourseLevelStreamStatus" : 1
+		},
+		{
+			"CourseFallStreamId" : 12,
+			"CourseLevelId" : 1,
+			"CourseLevelStreamName" : "Design and Technology",
+			"CourseLevelStreamStatus" : 1
+		},
+		{
+			"CourseFallStreamId" : 13,
+			"CourseLevelId" : 1,
+			"CourseLevelStreamName" : "Drama",
+			"CourseLevelStreamStatus" : 1
+		},
+		{
+			"CourseFallStreamId" : 14,
+			"CourseLevelId" : 1,
+			"CourseLevelStreamName" : "Economics & Business Studies",
+			"CourseLevelStreamStatus" : 1
+		},
+		{
+			"CourseFallStreamId" : 15,
+			"CourseLevelId" : 1,
+			"CourseLevelStreamName" : "English",
+			"CourseLevelStreamStatus" : 1
+		},
+		{
+			"CourseFallStreamId" : 16,
+			"CourseLevelId" : 1,
+			"CourseLevelStreamName" : "Geography",
+			"CourseLevelStreamStatus" : 1
+		},
+		{
+			"CourseFallStreamId" : 17,
+			"CourseLevelId" : 1,
+			"CourseLevelStreamName" : "History",
+			"CourseLevelStreamStatus" : 1
+		},
+		{
+			"CourseFallStreamId" : 18,
+			"CourseLevelId" : 1,
+			"CourseLevelStreamName" : "ICT",
+			"CourseLevelStreamStatus" : 1
+		},
+		{
+			"CourseFallStreamId" : 19,
+			"CourseLevelId" : 1,
+			"CourseLevelStreamName" : "Mathematics",
+			"CourseLevelStreamStatus" : 1
+		},
+		{
+			"CourseFallStreamId" : 20,
+			"CourseLevelId" : 1,
+			"CourseLevelStreamName" : "Languages",
+			"CourseLevelStreamStatus" : 1
+		},
+		{
+			"CourseFallStreamId" : 21,
+			"CourseLevelId" : 1,
+			"CourseLevelStreamName" : "Music",
+			"CourseLevelStreamStatus" : 1
+		},
+		{
+			"CourseFallStreamId" : 22,
+			"CourseLevelId" : 1,
+			"CourseLevelStreamName" : "Religion & Philosophy",
+			"CourseLevelStreamStatus" : 1
+		},
+		{
+			"CourseFallStreamId" : 23,
+			"CourseLevelId" : 1,
+			"CourseLevelStreamName" : "Sciences",
+			"CourseLevelStreamStatus" : 1
+		},
+		{
+			"CourseFallStreamId" : 24,
+			"CourseLevelId" : 1,
+			"CourseLevelStreamName" : "Sports",
+			"CourseLevelStreamStatus" : 1
+		}
+	]
+
+	for stream in coursefallstream_lists:
+		coursefallstream = CourseFallStream_M(
+						CourseFallStreamId = stream['CourseFallStreamId'],
+						CourseLevelId = stream['CourseLevelId'],
+						CourseLevelStreamName = stream['CourseLevelStreamName'],
+						CourseLevelStreamStatus = stream['CourseLevelStreamStatus']
+					)
+		coursefallstream.save()
+
+	handout_lists = [
+		{
+			"HandoutId" : 1,
+			"HandoutName" : "Others",
+			"HandoutStatus" : 1
+		},
+	]
+
+	for each in handout_lists:
+		handout = Handout_M(
+						HandoutId = each['HandoutId'],
+						HandoutName = each['HandoutName'],
+						HandoutStatus = each['HandoutStatus']
+					)
+		handout.save()
+
+	assignment_type = [
+		{
+			"AssignmentId" : 1,
+			"AssignmentName" : "Exercise",
+			"AssignmentStatus" : 1
+		},
+		{
+			"AssignmentId": 2 ,
+			"AssignmentName" : "Test",
+			"AssignmentStatus": 1
+		},
+		{
+			"AssignmentId" : 3,
+			"AssignmentName" : "Essay",
+			"AssignmentStatus" : 1
+		},
+		{
+			"AssignmentId" : 4,
+			"AssignmentName" : "Project Report",
+			"AssignmentStatus" : 1
+		},
+		{
+			"AssignmentId" : 5,
+			"AssignmentName":"Others",
+			"AssignmentStatus":1
+		}
+	]
+
+	for each in assignment_type:
+		assignment = Assignment_M(
+						AssignmentId = each['AssignmentId'],
+						AssignmentName = each['AssignmentName'],
+						AssignmentStatus = each['AssignmentStatus']
+					)
+		assignment.save()
+
+	# handout_lists = [
+	# 	{
+	# 		"HandoutId" : 1,
+	# 		"HandoutName" : "Others",
+	# 		"HandoutStatus" : 1
+	# 	},
+	# ]
+
+	# for each in handout_lists:
+	# 	handout = Handout_M(
+	# 					HandoutId = each['HandoutId'],
+	# 					HandoutName = each['HandoutName'],
+	# 					HandoutStatus = each['HandoutStatus']
+	# 				)
+	# 	handout.save()
+
+	# assignment_type = [
+	# 	{
+	# 		"AssignmentId" : 1,
+	# 		"AssignmentName" : "Exercise",
+	# 		"AssignmentStatus" : 1
+	# 	},
+	# 	{
+	# 		"AssignmentId": 2 ,
+	# 		"AssignmentName" : "Test",
+	# 		"AssignmentStatus": 1
+	# 	},
+	# 	{
+	# 		"AssignmentId" : 3,
+	# 		"AssignmentName" : "Essay",
+	# 		"AssignmentStatus" : 1
+	# 	},
+	# 	{
+	# 		"AssignmentId" : 4,
+	# 		"AssignmentName" : "Project Report",
+	# 		"AssignmentStatus" : 1
+	# 	},
+	# 	{
+	# 		"AssignmentId" : 5,
+	# 		"AssignmentName":"Others",
+	# 		"AssignmentStatus":1
+	# 	}
+	# ]
+
+	# for each in assignment_type:
+	# 	assignment = Assignment_M(
+	# 					AssignmentId = each['AssignmentId'],
+	# 					AssignmentName = each['AssignmentName'],
+	# 					AssignmentStatus = each['AssignmentStatus']
+	# 				)
+	# 	assignment.save()
+
+	assignment_testtype = [
+		{
+			"AssignmenttypeId" : 1,
+			"AssignmenttypeName" : "True/ False",
+			"AssignmenttypeStatus" : 1
+		},
+		{
+			"AssignmenttypeId": 2 ,
+			"AssignmenttypeName" : "Multiple Choice(Multiple Answer)",
+			"AssignmenttypeStatus": 1
+		},
+		{
+			"AssignmenttypeId" : 3,
+			"AssignmenttypeName" : "Multiple Choice(Single Answer)",
+			"AssignmenttypeStatus" : 1
+		},
+		{
+			"AssignmenttypeId" : 4,
+			"AssignmenttypeName" : "Short Answer",
+			"AssignmenttypeStatus" : 1
+		},
+	]
+
+	for each in assignment_testtype:
+		assignment = Assignment_Testtype_M(
+						AssignmenttypeId = each['AssignmenttypeId'],
+						AssignmenttypeName = each['AssignmenttypeName'],
+						AssignmenttypeStatus = each['AssignmenttypeStatus']
+					)
+		assignment.save()
+	
+
+if __name__ == '__main__':
+	cli()

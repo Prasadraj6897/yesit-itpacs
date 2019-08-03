@@ -1,0 +1,438 @@
+from flask import Blueprint, jsonify, redirect, url_for, request, render_template, current_app, flash
+from . models import CourseLevel_M, CourseLevelGroup_M, CourseIsFor_M, CourseFallStream_M, Module_M, Assignment_M, CourseDetails_M, Handout_Documents_M, Assignment_Testtype_M, TestUser_M, UserSalary_M
+from project.app import db, mongoEngine
+import json
+from sqlalchemy import exc
+# from pymongo import MongoClient
+from . utils import authenticate
+# from mongoengine.queryset.visitor import Q
+from . models import COURSE
+import base64
+import os
+import boto
+from uuid import uuid4
+from project.app import celery
+from datetime import date
+import time
+from bson import json_util
+from bson.objectid import ObjectId
+
+courses_blueprint = Blueprint('courses', __name__)
+
+@courses_blueprint.route('/courses/ping', methods=['GET'])
+def ping_pong():
+	return jsonify({
+		'status': 'Hi Prasad. You need to do courses',
+		'message': 'pong!'
+	})
+
+@courses_blueprint.route('/courses/getMyCourseLists', methods=['GET'])
+@authenticate
+def getMyCourseLists(resp):
+
+	courses = CourseDetails_M.objects.aggregate(*[
+				{
+					'$lookup': {
+						'from':CourseLevel_M._get_collection_name(),
+						'localField': 'CourseLevelId',
+						'foreignField': 'CourseLevelId',
+						'as': 'courselevel'
+					}
+				},
+				{
+					'$match' : { 'Creator_Id' : resp }
+				}
+			])
+	course_lists = [json.loads(json.dumps(item, default=json_util.default)) for item in courses]
+
+	response_object = {
+						'status': 'Success',
+						'message': 'Success alert',
+						'courses': course_lists
+					}
+
+	
+	return jsonify(response_object), 200
+
+@courses_blueprint.route('/courses/getCourseDetails', methods=['POST'])
+@authenticate
+def getCourseDetails(resp):
+
+	post_data = request.get_json()
+	courseid = post_data.get('CourseId')
+
+	courses = CourseDetails_M.objects.aggregate(*[
+				{
+					'$lookup': {
+						'from':CourseLevel_M._get_collection_name(),
+						'localField': 'CourseLevelId',
+						'foreignField': 'CourseLevelId',
+						'as': 'courselevel'
+					}
+				},
+				{
+					'$match' : { 
+						'Creator_Id' : resp,
+						'_id': ObjectId(courseid)
+					}
+				}
+			])
+	course_details = [json.loads(json.dumps(item, default=json_util.default)) for item in courses]
+
+	response_object = {
+						'status': 'Success',
+						'coursedata': course_details
+					}
+
+	
+	return jsonify(response_object), 200
+
+@courses_blueprint.route('/courses/uploadImageToS3', methods=['POST'])
+@authenticate
+def uploadImageToS3(resp):
+	userId = resp
+	post_data = request.get_json()
+	imageStr = post_data.get('imageData')
+	imgType = post_data.get('imageType')
+	imgBorder = post_data.get('imageBorder')
+	# prevImage = post_data.get('previousImg')
+	# prevImageName = post_data.get('fileName')
+
+	# create new file name
+	destination_filename = uuid4().hex + '.' + imgType
+
+	data = {
+		'acl': 'public-read',
+		'S3_LOCATION': current_app.config['S3_LOCATION'],
+		"S3_BUCKET": current_app.config["S3_BUCKET"],
+		'S3_KEY': current_app.config['S3_KEY'],
+		'S3_SECRET': current_app.config['S3_SECRET'],
+		'S3_COURSE_UPLOAD_DIRECTORY': current_app.config['S3_COURSE_UPLOAD_DIRECTORY'],
+		'UPLOAD_FOLDER': current_app.config['UPLOAD_FOLDER'],
+		'Image_String': imageStr,
+		"destinationFileName": destination_filename
+	}
+
+	celery.send_task('s3_upload_image', args=[data])
+	object_url = "https://s3-{0}.amazonaws.com/{1}/{2}/{3}".format(data["S3_LOCATION"], data["S3_BUCKET"], data["S3_COURSE_UPLOAD_DIRECTORY"], data["destinationFileName"])
+
+	time.sleep(2)
+
+	return jsonify({
+		'status': 'success',
+		'url': object_url
+	})
+
+@courses_blueprint.route('/courses/getCourseLevel', methods=['GET'])
+@authenticate
+def getCourseLevel(resp):
+	courseLevel = CourseLevel_M.objects().to_json()
+	courseLevel_lists = json.loads(courseLevel)
+
+	return jsonify({
+		'status': 'SUCCESS',
+		'message': 'pong!',
+		'courseLevelLists':courseLevel_lists
+	})
+
+@courses_blueprint.route('/courses/getCourseLevelGroup', methods=['POST'])
+@authenticate
+def getCourseLevelGroup(resp):
+	post_data = request.get_json()
+	courseLevelId = post_data.get('courseLevelId')
+
+	courseLevelGroup = CourseLevelGroup_M.objects(__raw__={'CourseLevelId':int(courseLevelId)}).to_json()
+	courseLevelGroup_lists = json.loads(courseLevelGroup)
+
+	return jsonify({
+		'status': 'SUCCESS',
+		'message': 'pong!',
+		'courseLevelGroupLists':courseLevelGroup_lists
+	})
+
+@courses_blueprint.route('/courses/getCourseFallStream', methods=['POST'])
+@authenticate
+def getCourseFallStream(resp):
+	post_data = request.get_json()
+	courseLevelId = int(post_data.get('courseLevelId'))
+	if courseLevelId == 1:
+		couId = 1
+	else:
+		couId = 0
+
+	courseLevelStream = CourseFallStream_M.objects(__raw__={'CourseLevelId':couId}).to_json()
+	courseLevelStream_lists = json.loads(courseLevelStream)
+
+	return jsonify({
+		'status': 'SUCCESS',
+		'message': 'pong!',
+		'courseFallStreamLists':courseLevelStream_lists
+	})
+
+@courses_blueprint.route('/courses/getCourseIsFor', methods=['POST'])
+@authenticate
+def getCourseIsFor(resp):
+	post_data = request.get_json()
+	groupLevelId = post_data.get('groupLevelId')
+
+	groupLevelStream = CourseIsFor_M.objects(__raw__={'CourseLevelGroupId':int(groupLevelId)}).to_json()
+	groupLevelStream_lists = json.loads(groupLevelStream)
+
+	return jsonify({
+		'status': 'SUCCESS',
+		'message': 'pong!',
+		'groupLevelStreamLists':groupLevelStream_lists
+	})
+
+
+@courses_blueprint.route('/courses/getassignmenttype', methods=['GET'])
+@authenticate
+def getassignment(resp):
+	assignment= Assignment_M.objects().to_json()
+	assignment_lists = json.loads(assignment)
+
+	return jsonify({
+		'status': 'SUCCESS',
+		'message': 'pong!',
+		'assignment':assignment_lists
+	})
+
+@courses_blueprint.route('/courses/addCourseDetails', methods=['POST'])
+@authenticate
+def addCourseDetails(resp):
+	today 				= date.today()
+	CurentDate 			= today.strftime("%d/%m/%Y")
+
+	post_data			= request.get_json()
+	CourseName			= post_data.get('courseNameData')
+	CourseLogo			= post_data.get('courseLogoData')
+	CourseLogoRadius 	= post_data.get('courseLogoRadiusData')
+	CourseDescription	= post_data.get('courseDescriptionData')
+	Creator_Id			= resp
+	CourseLevelId 		= post_data.get('courselevelData')
+	CourseLevelGroupId 	= post_data.get('courseGroupData')
+	CourseIsForId 		= post_data.get('courseIsForData')
+	CourseIsForName		= post_data.get('courseIsForText')
+	CourseFallStreamId	= post_data.get('courseFallStreamData')
+	CourseFallStreamName= post_data.get('courseFallStreamText')
+	AgeFrom				= post_data.get('courseAgeFromData')
+	AgeTo				= post_data.get('courseAgeToData')
+	CourseTypeId 		= post_data.get('courseTypeData')
+	OfficialCourse		= post_data.get('officialCourseData')
+	FromDate			= post_data.get('courseFromDate')
+	ToDate				= post_data.get('courseToDate')
+	SearchTags			= post_data.get('courseSearchTags')
+	CreatedDate			= CurentDate
+	ModifiedDate		= CurentDate
+	Published			= 0
+
+	CourseDetails = CourseDetails_M(
+			CourseName = CourseName,
+			CourseLogo = CourseLogo,
+			CourseLogoRadius = CourseLogoRadius,
+			CourseDescription = CourseDescription,
+			Creator_Id = Creator_Id,
+			CourseLevelId = CourseLevelId,
+			CourseLevelGroupId = CourseLevelGroupId,
+			CourseIsForId = CourseIsForId,
+			CourseIsForName = CourseIsForName,
+			CourseFallStreamId = CourseFallStreamId,
+			CourseFallStreamName = CourseFallStreamName,
+			AgeFrom = AgeFrom,
+			AgeTo = AgeTo,
+			CourseTypeId = CourseTypeId,
+			OfficialCourse = OfficialCourse,
+			FromDate = FromDate,
+			ToDate = ToDate,
+			SearchTags = SearchTags,
+			CreatedDate = CreatedDate,
+			ModifiedDate = ModifiedDate,
+			Published = Published
+		)
+	result = CourseDetails.save()
+
+	return jsonify({
+		'status': 'SUCCESS',
+		'message': 'pong!',
+		'CourseIsForId': CourseIsForId,
+		'UserId': Creator_Id,
+		'data': result
+	})
+
+
+@courses_blueprint.route('/courses/insertCourseModule', methods=['POST'])
+@authenticate
+def insertCourseModule(resp):
+	post_data = request.get_json()
+	module_name = post_data.get('modulename')
+	courseid = post_data.get('courseid')
+	user_id = resp
+
+	moduleDetails = Module_M(
+						UserId = resp,
+						CourseId = courseid,
+						ModuleName = module_name,
+						Status = 1
+					)
+	moduleDetails.save()
+
+	modules = Module_M.objects(__raw__={'CourseId':courseid}).to_json()
+	module_lists = json.loads(modules)
+
+	return jsonify({
+		'status': 'SUCCESS',
+		'message': 'pong!',
+		'modules': module_lists
+	})
+
+@courses_blueprint.route('/courses/getCourseModules', methods=['POST'])
+@authenticate
+def getCourseModules(resp):
+	post_data = request.get_json()
+	courseid = post_data.get('courseid')
+	user_id = resp
+
+	modules = Module_M.objects(__raw__={'CourseId':courseid}).to_json()
+	module_lists = json.loads(modules)
+
+	return jsonify({
+		'status': 'SUCCESS',
+		'message': 'pong!',
+		'modules': module_lists
+	})
+
+@courses_blueprint.route('/courses/getassignmenttesttype', methods=['GET'])
+@authenticate
+def getassignmenttesttype(resp):
+	assignment= Assignment_Testtype_M.objects().to_json()
+	assignment_lists = json.loads(assignment)
+
+	return jsonify({
+		'status': 'SUCCESS',
+		'message': 'pong!',
+		'assignment':assignment_lists
+	})
+
+@courses_blueprint.route('/courses/insertHandout', methods=['POST'])
+@authenticate
+def insertHandout(resp):
+	post_data = request.get_json()
+
+	creator_id = resp
+	course_id = post_data.get('courseid')
+	module_id = post_data.get('moduleid')
+	handout_name = post_data.get('handoutname')
+	description = post_data.get('description')
+	document_name = post_data.get('document_name')
+	document_extension = post_data.get('document_ext')
+	document_size = post_data.get('document_size')
+	document_path = "document_path"
+	created_on = post_data.get('createddate')
+	modified_on = post_data.get('createddate')
+
+	handout_m = Handout_Documents_M(
+					creator_id = creator_id,
+					view_mode_id = 0,
+					handout_price = 0,
+					course_id = course_id,
+					module_id = module_id,
+					handout_name = handout_name,
+					description = description,
+					document_name = document_name,
+					document_extension = document_extension,
+					document_type = "application",
+					document_size = document_size,
+					document_path = document_path,
+					created_on = created_on,
+					modified_on = modified_on,
+					published = 1
+				)
+	handout_m.save()
+
+	return jsonify({
+		'status' : 'Success',
+		'data' : created_on
+		})
+
+@courses_blueprint.route('/courses/getAllHandoutLists', methods=['GET'])
+@authenticate
+def getAllHandoutLists(resp):
+
+	handoutdoc= Handout_Documents_M.objects().to_json()
+	handout_lists = json.loads(handoutdoc)
+
+	return jsonify({
+		'status': 'SUCCESS',
+		'message': 'pong!',
+		'handout':handout_lists
+	})
+
+@courses_blueprint.route('/courses/getHandoutListsMappedWithCourse', methods=['GET'])
+@authenticate
+def getHandoutListsMappedWithCourse(resp):
+
+	handoutdoc= Handout_Documents_M.objects().to_json()
+	handout_lists = json.loads(handoutdoc)
+
+	return jsonify({
+		'status': 'SUCCESS',
+		'message': 'pong!',
+		'handout':handout_lists
+	})
+
+@courses_blueprint.route('/courses/testmongo', methods=['GET'])
+def testmongo():
+	userid = 2
+	testname = 'Babu'
+	testemail = 'babu@abc.com'
+	salary = 5000
+	user_id = 5
+
+	# MongoQuery = TestUser_M(
+	# 				user_id = userid,
+	# 				testname = testname,
+	# 				testemail = testemail
+	# 			)
+	# MongoQuery.save()
+
+	# MongoQuery1 = UserSalary_M(
+	# 				user_id = userid,
+	# 				salary = salary
+	# 			)
+	# MongoQuery1.save()
+
+	# test = TestUser_M.objects().first().to_json()
+	# result = json.loads(test)
+	# ids = result.get('_id')
+	cid = [63,64]
+	test = CourseDetails_M.objects.aggregate(*[
+			{
+				'$lookup': {
+					'from':CourseLevel_M._get_collection_name(),
+					'localField': 'CourseLevelId',
+					'foreignField': 'CourseLevelId',
+					'as': 'courselevel'
+				}
+			},
+			{
+				'$lookup': {
+					'from':CourseIsFor_M._get_collection_name(),
+					'localField':'CourseLevelGroupId',
+					'foreignField':'CourseLevelGroupId',
+					'as': 'courseisfor'
+				}
+			},
+			{
+				'$match' : { 
+					'Creator_Id' : user_id,
+					'_id': ObjectId('5d0cc4f22503bf000a9b6c99')
+				}
+			}
+		])
+	data = [json.loads(json.dumps(item, default=json_util.default)) for item in test]
+	# ids = data[0].get('_id')
+	return jsonify({
+		'status': 'SUCCESS',
+		'message': 'pong!',
+		'data': data
+	})

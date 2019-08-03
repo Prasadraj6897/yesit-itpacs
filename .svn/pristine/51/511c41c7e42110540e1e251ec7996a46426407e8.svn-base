@@ -1,0 +1,275 @@
+import React from 'react';
+import { 
+	MDBRow,
+	MDBCol,
+	MDBCard,
+	MDBView,
+	MDBCardBody,
+	MDBInput,
+	MDBContainer,
+	MDBAvatar,
+	MDBBtn,
+	MDBFileInput,
+	MDBModal,
+	MDBStepper, MDBStep, MDBSelect, MDBIcon, MDBDatePicker, MDBChipsInput,MDBSelectInput, MDBSelectOptions, MDBSelectOption, MDBProgress
+} from 'mdbreact';
+import './newcourse.css'
+import axios from 'axios'
+import {VideoFormRules} from './course_form_rules.js'
+import CourseError from './course_field_error.js'
+
+class videos extends React.Component{
+	constructor(props){
+		super(props)
+			this.state={
+				max_chars:2000,
+				chars_left:2000,
+				videouploadtype:"",
+				newvideo:false,
+				addfromlibrary:false,
+				novideo:true,
+				VideoFormRules:VideoFormRules,
+				videotitle:"",
+				valid:false,
+				videofilename:""
+			}
+	}
+	newvideo(){
+		this.setState({
+			newvideo:true,
+			addfromlibrary:false,
+			novideo:false,
+		})
+	}
+	closeall(){
+		this.setState({
+			newvideo:false,
+			addfromlibrary:false,
+			novideo:true,
+		})
+	}
+	addfromlibrary(){
+		this.setState({
+			newvideo:false,
+			addfromlibrary:true,
+			novideo:false,
+		})
+	}
+	handleCharlength(event)
+	{
+		console.log(event)
+		const input = event.target.value;
+		this.setState({
+			chars_left: this.state.max_chars - input.length
+		});
+	}
+	getvideo(value){
+		console.log(value.toString())
+		this.setState({
+			videouploadtype:value.toString()
+		})
+	}
+	uploadvideo = e => {
+		console.log(e)
+	}
+	formvalid(){
+		const formRules=this.state.VideoFormRules
+		if(this.state.videotitle.length>3)
+		{
+			formRules[0].valid = true
+		}
+		else
+		{
+			formRules[0].valid = false
+		}
+		
+		if(this.state.videofilename.length>3)
+		{
+			formRules[1].valid = true
+		}
+		else
+		{
+			formRules[1].valid = false
+		}
+		
+		this.setState({VideoFormRules: formRules})
+		if (this.allTrue())
+		{
+			this.setState({valid:true})
+		}
+		else
+		{
+			this.setState({valid:false})
+		}
+
+	}
+	allTrue(){
+		let formRules = VideoFormRules
+		for (const rule of formRules)
+		{
+			if(!rule.valid) return false
+		}
+		return true
+	}
+	handlechange(e){
+		console.log(e.target.value)
+		const obj = this.state
+		obj[e.target.name] = e.target.value
+		this.setState(obj)
+		this.formvalid()
+	}
+	render(){
+		let formRules=this.state.VideoFormRules
+		return(
+			<div class="contentbox">
+				<MDBRow>
+					<MDBCol md="12">
+						<h6 class="mb-0 font-weight-bold" >Video</h6>
+						<br />
+						<MDBBtn color="primary" size="md" rounded type="submit" onClick={(e)=>this.newvideo(e)}>Upload New Video</MDBBtn>
+						<MDBBtn color="primary" size="md" rounded type="submit" onClick={()=>this.addfromlibrary()}>Add From Library</MDBBtn>	
+						
+						{(this.state.novideo) && (
+							<p class="text-muted" className="text-center pt-4 pb-5 mb-2">
+								Currently there are no Videos
+							</p> 
+						)}
+
+						{(this.state.newvideo)&&(
+							<div>
+								<label class="labeltext">New Video</label>
+								<br />
+								<p >The Videos added to the course will also be available in the library</p>
+
+								<MDBRow>
+									<MDBCol md="12">
+										<label class="labeltext">This is Part of the Module</label>
+										<MDBSelect outline >
+											<MDBSelectInput selected="Select" />
+											<MDBSelectOptions>
+											<MDBSelectOption disabled>Select</MDBSelectOption>
+											<MDBSelectOption >Others</MDBSelectOption>
+											</MDBSelectOptions>
+										</MDBSelect>
+									</MDBCol>
+								</MDBRow>
+
+								<MDBRow>
+									<MDBCol md="12">
+										<label class="labeltext">Video Title *</label>
+										<MDBInput type="text" label="Video Title" outline onChange={(e)=>this.handlechange(e)} name="videotitle"/>
+										<span class="text-rightalign">Max 200 Characters</span>
+										<CourseError
+											formRulesObject={formRules[0]}
+										/>
+									</MDBCol>
+								</MDBRow>
+								
+								<MDBRow>
+									<MDBCol md="12">
+										<label class="labeltext">Description</label>
+										<MDBInput type="textarea" rows="1" label="Video Title" outline maxLength={this.state.max_chars} onChange={this.handleCharlength.bind(this)}/>
+										<span class="text-rightalign">{this.state.chars_left} Characters left</span>
+									</MDBCol>
+								</MDBRow>
+								
+								<MDBRow>
+									<MDBCol md="12">
+										<label class="labeltext">Search tags</label>
+										<MDBChipsInput placeholder="Enter tags to search" outline className="border border-light"/>
+									</MDBCol>
+								</MDBRow>
+
+								<MDBRow>
+									<MDBCol md="12">
+										<label class="labeltext">Upload Video</label>
+										<MDBSelect  outline getValue={this.getvideo.bind(this)}>
+											<MDBSelectInput selected="Select" />
+											<MDBSelectOptions>
+											<MDBSelectOption selected value="Add Video Link">Add Video Link</MDBSelectOption>
+											<MDBSelectOption value="Upload Video">Upload Video</MDBSelectOption>
+											</MDBSelectOptions>
+										</MDBSelect>
+									</MDBCol>
+								</MDBRow>
+
+								{(this.state.videouploadtype=="Add Video Link") &&(
+									<div>
+										<MDBRow>
+											<MDBCol md="12">
+												<label class="labeltext">Video Link *</label>
+												<MDBInput type="text" rows="1" label="File name" outline name="videofilename" onChange={(e)=>this.handlechange(e)}/>
+												<CourseError
+													formRulesObject={formRules[1]}
+												/>
+											</MDBCol>
+										</MDBRow>
+									</div>
+								)}
+
+								{(this.state.videouploadtype=="Upload Video") &&(
+									<div>
+										<label class="labeltext">Upload Video</label>
+										<MDBRow>
+											<MDBCol md="2">
+												<iframe className="embed-responsive-item" src="" class="videoframe"></iframe>
+											</MDBCol>
+											<MDBCol md="8">
+												<MDBFileInput />
+												<CourseError
+													formRulesObject={formRules[2]}
+												/>
+											</MDBCol>
+											<MDBCol md="2">
+												<MDBBtn onClick={this.uploadvideo.bind(this)}>Upload</MDBBtn>
+											</MDBCol>
+										</MDBRow>
+										<MDBProgress material animated value={50} height="20px">
+											50%
+										</MDBProgress>
+									</div>
+								)}
+
+								<MDBBtn color="primary" size="md" rounded type="submit" >Add New Video</MDBBtn>
+								<MDBBtn color="primary" size="md" rounded type="submit" onClick={()=>this.closeall()}>Cancel</MDBBtn>
+							</div>
+						)}
+						{(this.state.addfromlibrary) &&(
+							<div>
+								<MDBRow>
+									<MDBCol md="12">
+										<label class="labeltext">This is Part of the Module</label>
+										<MDBSelect  outline>
+											<MDBSelectInput selected="Select" />
+											<MDBSelectOptions>
+											<MDBSelectOption disabled>Select</MDBSelectOption>
+											<MDBSelectOption >Others</MDBSelectOption>
+											</MDBSelectOptions>
+										</MDBSelect>
+									</MDBCol>
+								</MDBRow>
+
+								<div className="input-group md-form form-sm form-1 pl-0">
+									<div className="input-group-prepend">
+									<MDBRow>
+										<MDBCol md="12">
+											<span className="input-group-text black lighten-3" id="basic-text1">
+												<MDBIcon className="text-white" icon="search" />
+											</span>
+										</MDBCol>
+									</MDBRow>	
+									</div>
+
+									<input className="form-control my-0 py-1" type="text" placeholder="Search" aria-label="Search" />
+								</div>
+								<MDBBtn color="primary" size="md" rounded type="submit" >Add to Course</MDBBtn>
+								<MDBBtn color="primary" size="md" rounded type="submit" onClick={()=>this.closeall()}>Cancel</MDBBtn>
+							</div>
+						)}
+					</MDBCol>
+				</MDBRow>
+			</div>
+		)
+	}
+}
+export default videos

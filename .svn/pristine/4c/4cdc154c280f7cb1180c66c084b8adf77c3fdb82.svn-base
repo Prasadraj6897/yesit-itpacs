@@ -1,0 +1,162 @@
+export const CourseFormRules = [
+		{
+			id:1,
+			field: 'courselevel',
+			name: 'Course Level is required.',
+			valid: false
+		},
+		{
+			id:2,
+			field: 'coursegroup',
+			name: 'Grouped By is required.',
+			valid: false
+		},
+		{
+			id:3,
+			field: 'courseisfor',
+			name: 'This Course Is For is required.',
+			valid: false
+		}
+		,
+		{
+			id:4,
+			field: 'agefromto',
+			name: 'Age From - To is required.',
+			valid: false
+		},
+		{
+			id:5,
+			field: 'coursetype',
+			name: 'Course Type is required.',
+			valid: false
+		},
+		{
+			id:6,
+			field: 'coursename',
+			name: 'Course Name is required.',
+			valid: false
+		}
+	]
+export const HandoutFormRules = [
+		{
+			id:1,
+			field:'handoutname',
+			name:'Handout name must be more than 2 characters.',
+			valid:false
+		},
+		{
+			id:2,
+			field:'handoutfile',
+			name:'File is required',
+			valid:false
+		}
+]
+export const AssignmentFormRules = [
+		{
+			id:1,
+			field:'assignmenttype',
+			name:'Assignment type is required',
+			valid:false
+		},
+		{
+			id:2,
+			field:'assignmentname',
+			name:'Test name is required',
+			valid:false
+		},
+		{
+			id:3,
+			field:'assignmentdesc',
+			name:'Description is required',
+			valid:false
+		},
+		{
+			id:4,
+			field:'assignmentgrade',
+			name:'Grading is required',
+			valid:false
+		},
+		{
+			id:5,
+			field:'assignmentweight',
+			name:'Weightage is required',
+			valid:false
+		},
+		{
+			id:6,
+			field:'assignmentfile',
+			name:'File is required',
+			valid:false
+		},
+		{
+			id:7,
+			field:'assignmenttesttype',
+			name:'Test type is required',
+			valid:false
+		},
+		{
+			id:8,
+			field:'assignmentquestionmethod',
+			name:'Question Method is required',
+			valid:false
+		},
+		{
+			id:9,
+			field:'assignmentquestionmark',
+			name:'Mark is required',
+			valid:false
+		},
+
+]
+
+export const VideoFormRules = [
+		{
+			id:1,
+			field:'videotitle',
+			name:'Video Name is required',
+			valid:false
+		},
+		{
+			id:2,
+			field:'videolink',
+			name:'Video Link is required',
+			valid:false
+		},
+		{
+			id:3,
+			field:'videofile',
+			name:'Video File is required',
+			valid:false
+		},
+
+]
+export const Paymentrules = [
+		{
+			id:1,
+			field:'email',
+			name:'Email is required',
+			valid:true
+		},
+		{
+			id:2,
+			field:'fees',
+			name:'fees is required',
+			valid:true
+		},
+		{
+			id:3,
+			field:'password',
+			name:'password is required',
+			valid:false
+		},
+
+]
+export const Marksrules = [
+		{
+			id:1,
+			field:'marks',
+			name:'Mark value is required',
+			valid:false
+		},
+
+]

@@ -1,0 +1,177 @@
+import React from 'react'
+import {Container, Row, Col, Input, Button, Card, CardBody } from 'mdbreact';
+import axios from 'axios'
+import { 
+	MDBRow,
+	MDBCol,
+	MDBCard,
+	MDBView,
+	MDBCardBody,
+	MDBInput,
+	MDBContainer,
+	MDBAvatar,
+	MDBBtn,
+	MDBFileInput,
+	MDBModal,
+	MDBStepper, MDBStep, MDBSelect, MDBIcon, MDBDatePicker, MDBChipsInput,MDBSelectInput, MDBSelectOptions, MDBSelectOption
+} from 'mdbreact';
+import './newcourse.css'
+
+class Modules extends React.Component{
+	constructor(props){
+		super(props)
+		this.state={
+			courseId: this.props.courseid,
+			rows: [],
+			modules_lists: [],
+		};
+		this.getCourseModules = this.getCourseModules.bind(this)
+	}
+
+	componentDidMount(){
+		this.getCourseModules()
+	}
+
+	getCourseModules(){
+		const courseid = this.state.courseId
+
+		const options = {
+	      url: `${process.env.REACT_APP_COURSES_SERVICE_URL}/courses/getCourseModules`,
+	      method: 'post',
+	      data:{'courseid': courseid},
+	      headers: {
+	        'Content-Type': 'application/json',
+	        Authorization: `Bearer ${window.localStorage.authToken}`
+	      }
+	    }
+	    return axios(options)
+	    .then((res)=>{
+	      this.setState({
+	      	modules_lists : res.data.modules
+	      })
+	      this.props.getModuleLists(res.data.modules)
+	    })
+	    .catch((error)=>{console.log(error)})
+	}
+
+	handleAddRow = () => {
+		const item = {
+			name: ""
+	    };
+		this.setState({
+			rows: [...this.state.rows, item]
+		});
+	};
+
+	handleChange = idx => e => {
+		const { name, value } = e.target;
+		const rows = [...this.state.rows];
+		rows[idx] = {
+			[name]: value
+		};
+		this.setState({
+			rows
+		});
+	};
+
+	handleRemoveRow(i){
+		let data = [...this.state.rows]
+		data.splice(i, 1)
+		this.setState({
+			rows: data
+		});
+	};
+
+	insertCourseModule(i){
+		let data = [...this.state.rows]
+		const moduleName = data[i].module
+		const courseid = this.state.courseId
+
+		const options = {
+	      url: `${process.env.REACT_APP_COURSES_SERVICE_URL}/courses/insertCourseModule`,
+	      method: 'post',
+	      data:{'courseid': courseid,'modulename': moduleName},
+	      headers: {
+	        'Content-Type': 'application/json',
+	        Authorization: `Bearer ${window.localStorage.authToken}`
+	      }
+	    }
+	    return axios(options)
+	    .then((res)=>{
+	      	this.getCourseModules()
+	      	data.splice(i, 1)
+			this.setState({
+				rows: data
+			});
+	    })
+	    .catch((error)=>{console.log(error)})
+	}
+
+	render(){
+		return (
+			<div class="contentbox">
+				<h6 className="mb-0 font-weight-bold">Modules</h6>
+				<br/>
+				{(this.state.modules_lists.length == 0 && this.state.rows.length == 0) &&
+					<div >
+						<p class="text-muted" className="text-center pt-4 pb-5 mb-2">
+							<a href="#" class="text-decoration-none" onClick={this.handleAddRow}>Click here </a>to add a new Module
+						</p> 
+					</div>
+				}
+
+				<div>
+					<ul class="list-group ModuleListsCls">
+						{
+							this.state.modules_lists.map((modules,index)=>{
+								return(
+									<li class="list-group-item">
+										<div>
+											<div style={{'width':'30%'}} className="fleft">
+												Module {index+1}
+											</div>
+											<div style={{'width':'50%'}} className="fleft">
+												{modules.ModuleName}
+											</div>
+											<div style={{'width':'20%'}} className="fleft">
+												<MDBIcon icon="edit"></MDBIcon>&nbsp;
+												<MDBIcon icon="trash"></MDBIcon>
+											</div>
+										</div>
+									</li>
+								)
+							})
+						}
+					</ul>
+					{(this.state.rows.length > 0 || this.state.modules_lists.length > 0) &&
+						<div>
+						{
+							this.state.rows.map((item, idx)=>{
+								return (
+									<MDBRow>
+										<MDBCol md="12" sm="4" className="TextWidthIconCls">
+											<MDBInput 
+												name="module"
+												type="text" 
+												hint="Enter Your Module Name" 
+												center 
+												outline
+												onChange={this.handleChange(idx)}
+												value={this.state.rows[idx].module}
+											/>
+											<MDBIcon icon="save" onClick={this.insertCourseModule.bind(this,idx)}></MDBIcon>&nbsp;
+											<MDBIcon icon="trash" onClick={this.handleRemoveRow.bind(this,idx)}></MDBIcon>
+										</MDBCol>
+									</MDBRow>
+								)
+							})
+						}
+						<MDBBtn color="primary" size="md" rounded type="submit" onClick={this.handleAddRow}>Add new Module</MDBBtn>
+						</div>
+					}
+				</div>
+			</div>
+		)
+	}
+}
+export default Modules
